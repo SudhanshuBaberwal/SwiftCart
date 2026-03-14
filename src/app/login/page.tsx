@@ -21,7 +21,7 @@ const LoginFinal = () => {
         e.preventDefault()
         setIsLoading(true)
         try {
-            const result = await signIn("credentials", { email, password , redirect : false })
+            const result = await signIn("credentials", { email, password, redirect: false })
             console.log(result)
             setIsLoading(false)
             toast.success("Welcome back!", {
@@ -45,7 +45,7 @@ const LoginFinal = () => {
     const handleGoogleAuth = async () => {
         setIsGoogleLoading(true)
         // Simulate Google OAuth popup delay
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        signIn("google", { callbackUrl: "/" })
         setIsGoogleLoading(false)
 
         toast.success(`Authenticated with Google!`, {

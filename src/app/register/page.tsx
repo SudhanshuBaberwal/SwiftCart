@@ -6,6 +6,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import toast, { Toaster } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { signIn } from 'next-auth/react'
 
 const RegisterFinal = () => {
     const [step, setStep] = useState<1 | 2>(1)
@@ -57,7 +58,7 @@ const RegisterFinal = () => {
     // Handle Google Authentication
     const handleGoogleAuth = async () => {
         setIsGoogleLoading(true)
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        signIn("google" , {callbackUrl : "/"})
         setIsGoogleLoading(false)
 
         toast.success(`Authenticated as ${accountType} with Google!`, {
@@ -175,34 +176,34 @@ const RegisterFinal = () => {
         }
     }
 
-const stepSwitchVariants: Variants = {
-  hidden: {
-    x: 30,
-    y: 10,
-    opacity: 0,
-    filter: "blur(5px)",
-    scale: 0.98
-  },
-  visible: {
-    x: 0,
-    y: 0,
-    opacity: 1,
-    filter: "blur(0px)",
-    scale: 1,
-    transition: rigidSpring
-  },
-  exit: {
-    x: -30,
-    y: -10,
-    opacity: 0,
-    filter: "blur(5px)",
-    scale: 1.02,
-    transition: {
-      duration: 0.4,
-      ease: "easeInOut"
+    const stepSwitchVariants: Variants = {
+        hidden: {
+            x: 30,
+            y: 10,
+            opacity: 0,
+            filter: "blur(5px)",
+            scale: 0.98
+        },
+        visible: {
+            x: 0,
+            y: 0,
+            opacity: 1,
+            filter: "blur(0px)",
+            scale: 1,
+            transition: rigidSpring
+        },
+        exit: {
+            x: -30,
+            y: -10,
+            opacity: 0,
+            filter: "blur(5px)",
+            scale: 1.02,
+            transition: {
+                duration: 0.4,
+                ease: "easeInOut"
+            }
+        }
     }
-  }
-}
 
     const roles = [
         { id: 'user', title: 'Personal Account', desc: 'Shop across thousands of stores with a single unified cart.', icon: <FiUser size={22} /> },
@@ -222,8 +223,8 @@ const stepSwitchVariants: Variants = {
                         alt="Abstract fluid background"
                         className="w-full h-full object-cover opacity-40 mix-blend-luminosity"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]" />
+                    <div className="absolute inset-0 bg-linear-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-r from-[#050505] via-transparent to-[#050505]" />
                 </div>
 
                 <div className="relative z-10 flex items-center gap-3">
@@ -238,7 +239,7 @@ const stepSwitchVariants: Variants = {
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
                         className="text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight mb-6"
                     >
-                        Commerce without <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">boundaries.</span>
+                        Commerce without <span className="text-transparent bg-clip-text bg-linear-to-r from-gray-200 to-gray-500">boundaries.</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }}
@@ -261,7 +262,7 @@ const stepSwitchVariants: Variants = {
                     <span className="font-semibold text-white">MultiCart</span>
                 </div>
 
-                <div className="w-full max-w-[420px] mt-20 lg:mt-0">
+                <div className="w-full max-w-105 mt-20 lg:mt-0">
                     <AnimatePresence mode='wait' custom={step}>
 
                         {/* --- STEP 1: Role Selection --- */}
@@ -275,7 +276,7 @@ const stepSwitchVariants: Variants = {
                                         {roles.map((role) => (
                                             <motion.div
                                                 key={role.id} variants={cardElement} onClick={() => setAccountType(role.id)} whileHover={{ y: -3, transition: { ...softSpring } }} whileTap={{ scale: 0.99 }}
-                                                className={`relative overflow-hidden cursor-pointer rounded-2xl p-5 border transition-all duration-300 flex items-start gap-4 ${accountType === role.id ? 'bg-white/[0.08] border-white/30' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'}`}
+                                                className={`relative overflow-hidden cursor-pointer rounded-2xl p-5 border transition-all duration-300 flex items-start gap-4 ${accountType === role.id ? 'bg-white/8 border-white/30' : 'bg-white/2 border-white/5 hover:bg-white/4'}`}
                                             >
                                                 <div className={`mt-0.5 p-2.5 rounded-xl transition-colors ${accountType === role.id ? 'bg-white text-black shadow-lg shadow-white/20' : 'bg-white/5 text-gray-400'}`}>
                                                     {role.icon}
@@ -318,7 +319,7 @@ const stepSwitchVariants: Variants = {
 
                                         <motion.button
                                             variants={cardElement} type="button" onClick={handleGoogleAuth} disabled={isGoogleLoading || isLoading}
-                                            className="w-full py-3.5 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full py-3.5 bg-white/3 hover:bg-white/8 border border-white/10 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {isGoogleLoading ? (
                                                 <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><FiLoader size={18} className="text-gray-400" /></motion.div>
@@ -344,7 +345,7 @@ const stepSwitchVariants: Variants = {
                                                 <label htmlFor="fullName" className="text-xs font-medium text-gray-400 ml-1">Full Name</label>
                                                 <input
                                                     id="fullName" type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/40 focus:bg-white/[0.05] transition-all"
+                                                    className="w-full bg-white/3 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/40 focus:bg-white/5 transition-all"
                                                     placeholder="Jane Doe"
                                                 />
                                             </motion.div>
@@ -353,7 +354,7 @@ const stepSwitchVariants: Variants = {
                                                 <label htmlFor="emailAddress" className="text-xs font-medium text-gray-400 ml-1">Email Address</label>
                                                 <input
                                                     id="emailAddress" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/40 focus:bg-white/[0.05] transition-all"
+                                                    className="w-full bg-white/3 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/40 focus:bg-white/5 transition-all"
                                                     placeholder="jane@example.com"
                                                 />
                                             </motion.div>
@@ -363,7 +364,7 @@ const stepSwitchVariants: Variants = {
                                                 <div className="relative">
                                                     <input
                                                         id="password" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                                                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-4 pr-12 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/40 focus:bg-white/[0.05] transition-all"
+                                                        className="w-full bg-white/3 border border-white/10 rounded-xl p-4 pr-12 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/40 focus:bg-white/5 transition-all"
                                                         placeholder="••••••••"
                                                     />
                                                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
