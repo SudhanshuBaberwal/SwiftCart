@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-interface IUser {
+export interface IUser {
   id?: mongoose.Types.ObjectId;
   name: string;
   email: string;
@@ -44,7 +44,7 @@ const userSceham = new mongoose.Schema<IUser>(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
     },
     image: {
       type: String,

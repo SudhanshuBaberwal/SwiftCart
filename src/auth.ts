@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import connectDB from "./lib/connectDB";
@@ -50,11 +51,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: user.name,
             email: user.email,
             image: user.image,
+            role: "user",
           });
         }
 
         user.id = dbUser._id.toString();
-        user.role = dbUser.role.toString();
+        user.role = dbUser.role;
       }
 
       return true;

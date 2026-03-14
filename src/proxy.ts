@@ -5,7 +5,7 @@ export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
   const publicRoute = [
     "/login",
-    "/signup",
+    "/register",
     "/api/auth",
     "/favicon.ico",
     "/_next",

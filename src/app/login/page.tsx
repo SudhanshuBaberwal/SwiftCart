@@ -1,11 +1,13 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
 import { FiArrowRight, FiLoader } from 'react-icons/fi'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import toast, { Toaster } from 'react-hot-toast'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
 
 const LoginFinal = () => {
     // Form & UI State
@@ -16,12 +18,18 @@ const LoginFinal = () => {
     const [isGoogleLoading, setIsGoogleLoading] = useState(false)
     const router = useRouter()
 
+
     // Handle traditional form submission
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
         try {
             const result = await signIn("credentials", { email, password, redirect: false })
+            if (result?.error) {
+                toast.error("Invalid email or password")
+                setIsLoading(false)
+                return
+            }
             console.log(result)
             setIsLoading(false)
             toast.success("Welcome back!", {
@@ -210,7 +218,13 @@ const LoginFinal = () => {
                         </form>
 
                         <p className="text-center text-sm text-gray-500 mt-8">
-                            Don't have an account? <a href="/register" className="text-white hover:underline transition-all font-medium">Sign up</a>
+                            Don't have an account?{" "}
+                            <Link
+                                href="/register"
+                                className="text-white hover:underline transition-all font-medium"
+                            >
+                                Sign up
+                            </Link>
                         </p>
                     </motion.div>
                 </div>

@@ -26,7 +26,7 @@ const RegisterFinal = () => {
         e.preventDefault()
         setIsLoading(true)
         try {
-            const result = await axios.post("/api/auth/register", { accountType, name, email, password })
+            const result = await axios.post("/api/auth/register", { name, email, password })
             console.log(result.data)
 
             toast.success("Account created successfully!", {
@@ -57,20 +57,17 @@ const RegisterFinal = () => {
 
     // Handle Google Authentication
     const handleGoogleAuth = async () => {
-        setIsGoogleLoading(true)
-        signIn("google" , {callbackUrl : "/"})
-        setIsGoogleLoading(false)
+        try {
+            setIsGoogleLoading(true)
 
-        toast.success(`Authenticated as ${accountType} with Google!`, {
-            duration: 4000,
-            position: 'bottom-right',
-            style: {
-                borderRadius: '12px', background: '#1a1a1a', color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-            },
-            iconTheme: { primary: '#10b981', secondary: '#fff' },
-        });
-        // router.push("/dashboard") // Add your redirect here later
+            await signIn("google", {
+                callbackUrl: "/"
+            })
+
+        } catch (error) {
+            toast.error("Google authentication failed")
+            setIsGoogleLoading(false)
+        }
     }
 
     const getPasswordStrength = () => {
