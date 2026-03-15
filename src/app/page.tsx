@@ -26,7 +26,7 @@ const Home = async () => {
   return (
     <div className='flex min-h-screen items-center justify-center bg-linear-to-br from-gray-900 via-black to-gray-900 font-sans flex-col'>
       <Navbar user={plainUsre} />
-      {user?.role === "user" ? <UserDashBoard /> : user?.role === "vendor" ? <VendorDashboard /> : <AdminDashBoard />}
+      {user?.role === "user" ? (<UserDashBoard />) : user?.role === "vendor" ? (<VendorDashboard />) : (<AdminDashBoard />)}
     </div>
   )
 }

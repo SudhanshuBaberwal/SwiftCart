@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
 import { signOut } from 'next-auth/react'
 import {
@@ -18,21 +18,31 @@ import {
     AiOutlineLogout,
 } from 'react-icons/ai'
 import { GoListUnordered } from 'react-icons/go'
-import { IUser } from '@/model/user.model'
+
+// Note: Replace this with your actual user model import
+interface IUser { role: string; image?: string; name?: string; email?: string }
 import logo from "@/assets/logo.png"
 
 // --- Helper Types ---
 interface NavProps { user?: IUser | null }
-interface NavItemProps { label: string; path: string; router: any }
-interface IconBtnProps { Icon: React.ElementType; onClick: () => void; badgeCount?: number }
-interface DropDownBtnProps { Icon: React.ElementType; label: string; onClick: () => void; danger?: boolean }
-interface SidebarBtnProps { label: string; path?: string; Icon: React.ElementType; onClick: () => void; danger?: boolean }
+interface NavItemProps { label: string; path: string; router: any; isActive: boolean }
+interface IconBtnProps { Icon: React.ElementType; onClick: () => void; badgeCount?: number; highlight?: boolean }
 
 const Navbar = ({ user }: NavProps) => {
-    const [openMenu, setOpenMenu] = useState<boolean>(false) // Fixed: Start closed
+    const [openMenu, setOpenMenu] = useState<boolean>(false)
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false)
+    const [scrolled, setScrolled] = useState(false)
+    
     const router = useRouter()
+    const pathname = usePathname()
     const dropdownRef = useRef<HTMLDivElement>(null)
+
+    // Handle scroll effect for the floating navbar
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20)
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [])
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -45,193 +55,213 @@ const Navbar = ({ user }: NavProps) => {
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
-    // Determine if the view is for a standard consumer (or guest) vs vendor/admin
     const isConsumerView = !user || user.role === 'user'
 
     return (
-        <div className='fixed top-0 left-0 w-full bg-[#050505]/90 backdrop-blur-xl text-white z-50 border-b border-white/5 shadow-2xl'>
-            <div className='max-w-7xl mx-auto px-6 py-4 flex justify-between items-center'>
-
-                {/* --- Logo --- */}
-                <div onClick={() => router.push("/")} className='flex items-center gap-3 cursor-pointer group'>
-                    <div className="relative w-10 h-10 overflow-hidden rounded-xl border border-white/10 group-hover:border-white/30 transition-colors">
-                        <Image src={logo} alt='SwiftCart Logo' fill className='object-cover' sizes="40px" />
-                    </div>
-                    <span className='text-xl font-bold tracking-wide hidden sm:inline bg-clip-text text-transparent bg-linear-to-r from-white to-gray-400'>
-                        SwiftCart
-                    </span>
-                </div>
-
-                {/* --- Desktop Center Links --- */}
-                {isConsumerView && (
-                    <div className='hidden md:flex items-center gap-8 text-[15px] font-medium'>
-                        <NavItem label="Home" path="/" router={router} />
-                        <NavItem label="Categories" path="/categories" router={router} />
-                        <NavItem label="Shop" path="/shop" router={router} />
-                        <NavItem label="Orders" path="/orders" router={router} />
-                    </div>
-                )}
-
-                {/* --- Desktop Right Icons --- */}
-                <div className='hidden md:flex items-center gap-5'>
-                    {isConsumerView && <IconBtn Icon={AiOutlineSearch} onClick={() => router.push("/categories")} />}
-                    <IconBtn Icon={AiOutlinePhone} onClick={() => router.push("/support")} />
-
-                    {/* Profile Dropdown Container */}
-                    <div className='relative' ref={dropdownRef}>
-                        {user?.image ? (
-                            <div
-                                onClick={() => setOpenMenu(!openMenu)}
-                                className='w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-blue-500 transition-all cursor-pointer'
-                            >
-                                <Image width={40} height={40} src={user.image} alt='user' className='object-cover w-full h-full' />
-                            </div>
-                        ) : (
-                            <IconBtn Icon={AiOutlineUser} onClick={() => setOpenMenu(!openMenu)} />
-                        )}
-
-                        <AnimatePresence>
-                            {openMenu && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    transition={{ duration: 0.2, ease: "easeOut" }}
-                                    className='absolute right-0 mt-4 w-52 bg-[#121214] border border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.8)] overflow-hidden py-2 z-50'
-                                >
-                                    <DropDownBtn Icon={AiOutlineUser} label="Profile" onClick={() => { router.push("/profile"); setOpenMenu(false) }} />
-                                    {user ? (
-                                        <DropDownBtn danger Icon={AiOutlineLogout} label="Sign Out" onClick={() => { signOut({ callbackUrl: "/login" }); setOpenMenu(false) }} />
-                                    ) : (
-                                        <DropDownBtn Icon={AiOutlineLogin} label="Sign In" onClick={() => { router.push("/login"); setOpenMenu(false) }} />
-                                    )}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+        // Wrapper creates the floating effect
+        <div className='fixed top-0 left-0 w-full z-50 px-4 sm:px-6 pt-4 transition-all duration-300 pointer-events-none'>
+            
+            <motion.div 
+                animate={{
+                    y: scrolled ? 0 : 5,
+                    boxShadow: scrolled ? "0 20px 40px -15px rgba(0,0,0,0.5)" : "none"
+                }}
+                className={`max-w-7xl mx-auto rounded-full pointer-events-auto transition-colors duration-500
+                    ${scrolled ? "bg-[#0a0a0c]/80 border border-white/[0.05] backdrop-blur-2xl" : "bg-transparent border border-transparent"}`}
+            >
+                <div className='px-6 py-3 flex justify-between items-center relative'>
+                    
+                    {/* --- Logo --- */}
+                    <div onClick={() => router.push("/")} className='flex items-center gap-3 cursor-pointer group z-10'>
+                        <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_25px_rgba(217,70,239,0.5)] transition-all duration-300">
+                            {/* Fallback text if logo image fails/isn't there, styled like the admin panel */}
+                            <span className="font-bold text-lg text-white">S</span>
+                            {/* <Image src={logo} alt='SwiftCart' fill className='object-cover rounded-xl' sizes="40px" /> */}
+                        </div>
+                        <span className='text-xl font-bold tracking-wide hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400'>
+                            SwiftCart
+                        </span>
                     </div>
 
-                    {isConsumerView && <IconBtn Icon={AiOutlineShoppingCart} badgeCount={2} onClick={() => router.push("/cart")} />}
-                </div>
-
-                {/* --- Mobile Header Icons --- */}
-                <div className='md:hidden flex items-center gap-4'>
-                    {isConsumerView ? (
-                        <>
-                            <IconBtn Icon={AiOutlineSearch} onClick={() => router.push("/categories")} />
-                            <IconBtn Icon={AiOutlineShoppingCart} badgeCount={5} onClick={() => router.push("/cart")} />
-                        </>
-                    ) : (
-                        <IconBtn Icon={AiOutlinePhone} onClick={() => router.push("/support")} />
+                    {/* --- Desktop Center Links --- */}
+                    {isConsumerView && (
+                        <div className='hidden md:flex items-center absolute left-1/2 -translate-x-1/2 bg-white/[0.02] border border-white/[0.03] rounded-full p-1.5 backdrop-blur-md'>
+                            <NavItem label="Home" path="/" router={router} isActive={pathname === "/"} />
+                            <NavItem label="Categories" path="/categories" router={router} isActive={pathname === "/categories"} />
+                            <NavItem label="Shop" path="/shop" router={router} isActive={pathname === "/shop"} />
+                            <NavItem label="Orders" path="/orders" router={router} isActive={pathname === "/orders"} />
+                        </div>
                     )}
-                    <button onClick={() => setSidebarOpen(true)} className="p-2 -mr-2 text-gray-300 hover:text-white transition-colors">
-                        <AiOutlineMenu size={26} />
-                    </button>
+
+                    {/* --- Desktop Right Area --- */}
+                    <div className='hidden md:flex items-center gap-2 z-10'>
+                        {isConsumerView && <IconBtn Icon={AiOutlineSearch} onClick={() => router.push("/categories")} />}
+                        <IconBtn Icon={AiOutlinePhone} onClick={() => router.push("/support")} />
+                        {isConsumerView && <IconBtn Icon={AiOutlineShoppingCart} badgeCount={2} onClick={() => router.push("/cart")} highlight />}
+
+                        <div className="w-px h-6 bg-white/10 mx-2" /> {/* Divider */}
+
+                        {/* Profile Area */}
+                        <div className='relative' ref={dropdownRef}>
+                            <button 
+                                onClick={() => setOpenMenu(!openMenu)}
+                                className="flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full hover:bg-white/[0.04] transition-colors border border-transparent hover:border-white/[0.05]"
+                            >
+                                {user?.image ? (
+                                    <img src={user.image} alt='user' className='w-8 h-8 rounded-full object-cover border border-white/10' />
+                                ) : (
+                                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center border border-violet-500/30">
+                                        <AiOutlineUser size={16} />
+                                    </div>
+                                )}
+                                {user && <span className="text-sm font-medium text-gray-300 hidden lg:block">{user.name || "User"}</span>}
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            <AnimatePresence>
+                                {openMenu && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 15, scale: 0.95, filter: "blur(4px)" }}
+                                        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95, filter: "blur(4px)" }}
+                                        transition={{ duration: 0.2, ease: "easeOut" }}
+                                        className='absolute right-0 mt-4 w-60 bg-[#0a0a0c]/95 backdrop-blur-xl border border-white/[0.05] rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden p-2 z-50'
+                                    >
+                                        <div className="px-4 py-3 border-b border-white/[0.05] mb-2">
+                                            <p className="text-sm font-semibold text-white truncate">{user?.name || "Guest Account"}</p>
+                                            <p className="text-xs text-gray-500 truncate">{user?.email || "Sign in to manage orders"}</p>
+                                        </div>
+
+                                        <button onClick={() => { router.push("/profile"); setOpenMenu(false) }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/[0.04] rounded-xl transition-colors">
+                                            <AiOutlineUser size={18} className="text-gray-500" /> Profile
+                                        </button>
+
+                                        {user ? (
+                                            <button onClick={() => { signOut({ callbackUrl: "/login" }); setOpenMenu(false) }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors mt-1">
+                                                <AiOutlineLogout size={18} className="text-red-500/70" /> Sign Out
+                                            </button>
+                                        ) : (
+                                            <button onClick={() => { router.push("/login"); setOpenMenu(false) }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-violet-400 hover:bg-violet-500/10 rounded-xl transition-colors mt-1">
+                                                <AiOutlineLogin size={18} className="text-violet-500/70" /> Sign In
+                                            </button>
+                                        )}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+
+                    {/* --- Mobile Header Icons --- */}
+                    <div className='md:hidden flex items-center gap-1 z-10'>
+                        {isConsumerView && <IconBtn Icon={AiOutlineShoppingCart} badgeCount={5} onClick={() => router.push("/cart")} highlight />}
+                        <button onClick={() => setSidebarOpen(true)} className="p-2 ml-2 text-gray-300 hover:text-white hover:bg-white/[0.05] rounded-full transition-colors">
+                            <AiOutlineMenu size={24} />
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* --- Mobile Sidebar Overlay & Drawer --- */}
             <AnimatePresence>
                 {sidebarOpen && (
-                    <>
-                        {/* Dim Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-90"
-                            onClick={() => setSidebarOpen(false)}
-                        />
+                    <div className="fixed inset-0 z-[100] pointer-events-auto">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setSidebarOpen(false)} />
 
-                        {/* Sidebar */}
                         <motion.div
-                            initial={{ x: "100%" }}
-                            animate={{ x: 0 }}
-                            exit={{ x: "100%" }}
-                            transition={{ type: "spring", stiffness: 250, damping: 30 }}
-                            className='fixed top-0 right-0 h-screen w-[75%] sm:w-75 bg-[#0c0c0e] border-l border-white/10 p-6 text-white z-100 shadow-2xl flex flex-col'
+                            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                            className='absolute top-0 right-0 h-screen w-[85%] sm:w-80 bg-[#08080a] border-l border-white/5 p-6 flex flex-col shadow-2xl'
                         >
-                            <div className='flex justify-between items-center mb-8 border-b border-white/10 pb-4'>
-                                <h1 className='text-xl font-bold tracking-wide'>Menu</h1>
-                                <button onClick={() => setSidebarOpen(false)} className='p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors'>
-                                    <AiOutlineClose size={20} />
+                            <div className='flex justify-between items-center mb-8'>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-white text-sm">S</div>
+                                    <h1 className='text-lg font-bold'>Menu</h1>
+                                </div>
+                                <button onClick={() => setSidebarOpen(false)} className='p-2 bg-white/[0.02] border border-white/[0.05] rounded-full hover:bg-white/[0.05] transition-colors'>
+                                    <AiOutlineClose size={18} />
                                 </button>
                             </div>
 
-                            <div className='flex flex-col gap-2 grow overflow-y-auto'>
+                            <div className='flex flex-col gap-2 grow overflow-y-auto scrollbar-hide'>
                                 {isConsumerView && (
                                     <>
-                                        <SidebarBtn label="Home" Icon={AiOutlineHome} onClick={() => { router.push("/"); setSidebarOpen(false) }} />
-                                        <SidebarBtn label="Categories" Icon={AiOutlineAppstore} onClick={() => { router.push("/categories"); setSidebarOpen(false) }} />
-                                        <SidebarBtn label="Shops" Icon={AiOutlineShop} onClick={() => { router.push("/shops"); setSidebarOpen(false) }} />
-                                        <SidebarBtn label="Orders" Icon={GoListUnordered} onClick={() => { router.push("/orders"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Home" Icon={AiOutlineHome} isActive={pathname === "/"} onClick={() => { router.push("/"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Categories" Icon={AiOutlineAppstore} isActive={pathname === "/categories"} onClick={() => { router.push("/categories"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Shops" Icon={AiOutlineShop} isActive={pathname === "/shops"} onClick={() => { router.push("/shops"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Orders" Icon={GoListUnordered} isActive={pathname === "/orders"} onClick={() => { router.push("/orders"); setSidebarOpen(false) }} />
                                     </>
                                 )}
-                                <div className="h-px w-full bg-white/10 my-2" /> {/* Divider */}
-                                <SidebarBtn label="Profile" Icon={AiOutlineUser} onClick={() => { router.push("/profile"); setSidebarOpen(false) }} />
+                                
+                                <div className="h-px w-full bg-white/[0.05] my-4" /> 
+                                
+                                <MobileNavBtn label="Profile" Icon={AiOutlineUser} isActive={pathname === "/profile"} onClick={() => { router.push("/profile"); setSidebarOpen(false) }} />
 
-                                {user ? (
-                                    <SidebarBtn danger label="Sign Out" Icon={AiOutlineLogout} onClick={() => { signOut(); setSidebarOpen(false) }} />
-                                ) : (
-                                    <SidebarBtn label="Sign In" Icon={AiOutlineLogin} onClick={() => { router.push("/login"); setSidebarOpen(false) }} />
-                                )}
+                                <div className="mt-auto pt-4">
+                                    {user ? (
+                                        <button onClick={() => { signOut(); setSidebarOpen(false) }} className="flex items-center justify-center gap-3 w-full py-3.5 rounded-2xl bg-red-500/10 text-red-400 font-medium hover:bg-red-500/20 transition-colors border border-red-500/20">
+                                            <AiOutlineLogout size={20} /> Sign Out
+                                        </button>
+                                    ) : (
+                                        <button onClick={() => { router.push("/login"); setSidebarOpen(false) }} className="flex items-center justify-center gap-3 w-full py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-medium transition-colors shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+                                            <AiOutlineLogin size={20} /> Sign In
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </motion.div>
-                    </>
+                    </div>
                 )}
             </AnimatePresence>
         </div>
     )
 }
 
-export default Navbar
+// --- Subcomponents ---
 
-/* --- Subcomponents --- */
-
-const NavItem = ({ label, path, router }: NavItemProps) => (
+const NavItem = ({ label, path, router, isActive }: NavItemProps) => (
     <button
         onClick={() => router.push(path)}
-        className='relative text-gray-400 hover:text-white transition-colors duration-200 group'
+        className='relative px-5 py-2 text-sm font-medium transition-colors duration-300 rounded-full group'
     >
-        {label}
-        {/* Subtle underline hover effect */}
-        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full rounded-full" />
+        {/* Animated Sliding Pill Background for Desktop */}
+        {isActive && (
+            <motion.div
+                layoutId="desktop-nav-pill"
+                className="absolute inset-0 bg-white/[0.06] border border-white/[0.05] rounded-full"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            />
+        )}
+        <span className={`relative z-10 ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200"}`}>
+            {label}
+        </span>
     </button>
 )
 
-const IconBtn = ({ Icon, onClick, badgeCount }: IconBtnProps) => (
-    <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+const IconBtn = ({ Icon, onClick, badgeCount, highlight }: IconBtnProps) => (
+    <button
         onClick={onClick}
-        className='relative p-2 text-gray-300 hover:text-white transition-colors bg-white/0 hover:bg-white/5 rounded-full'
+        className={`relative p-2.5 rounded-full transition-all duration-300 ${highlight ? 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20' : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'}`}
     >
-        <Icon size={24} />
+        <Icon size={20} />
         {badgeCount !== undefined && badgeCount > 0 && (
-            <span className='absolute top-0 right-0 bg-blue-600 border-2 border-[#050505] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center translate-x-1/4 -translate-y-1/4'>
+            <span className='absolute top-0.5 right-0.5 bg-fuchsia-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-[0_0_10px_rgba(217,70,239,0.8)]'>
                 {badgeCount}
             </span>
         )}
-    </motion.button>
-)
-
-const DropDownBtn = ({ Icon, label, onClick, danger }: DropDownBtnProps) => (
-    <button
-        className={`flex items-center gap-3 w-full px-4 py-2.5 text-[14px] font-medium transition-colors cursor-pointer ${danger ? 'text-red-400 hover:bg-red-500/10' : 'text-gray-300 hover:text-white hover:bg-white/5'
-            }`}
-        onClick={onClick}
-    >
-        <Icon size={18} />
-        {label}
     </button>
 )
 
-const SidebarBtn = ({ label, Icon, onClick, danger }: SidebarBtnProps) => (
+const MobileNavBtn = ({ label, Icon, onClick, isActive }: { label: string, Icon: any, onClick: () => void, isActive: boolean }) => (
     <button
-        className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all font-medium ${danger ? 'text-red-400 hover:bg-red-500/10' : 'text-gray-300 hover:text-white hover:bg-white/5'
-            }`}
+        className={`relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-medium overflow-hidden group w-full text-left`}
         onClick={onClick}
     >
-        <Icon size={22} />
-        {label}
+        {isActive && (
+            <motion.div layoutId="mobile-nav-bg" className="absolute inset-0 bg-white/[0.05] border border-white/[0.05] rounded-2xl" />
+        )}
+        <Icon size={22} className={`relative z-10 transition-colors ${isActive ? "text-violet-400" : "text-gray-500 group-hover:text-gray-300"}`} />
+        <span className={`relative z-10 transition-colors ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200"}`}>{label}</span>
     </button>
 )
+
+export default Navbar

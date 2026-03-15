@@ -1,9 +1,19 @@
+'use client'
 import React from 'react'
+import Slider from './Slider'
+import CategorySlider from './CategorySlider'
 
 const UserDashBoard = () => {
   return (
-     <div className="w-full min-h-screen flex items-center justify-center bg-linear-to-br from-gray-900 via-black to-gray-900 text-white p-6">
-      <h1 className='text-white text-4xl'>User Dashboard</h1>
+    // Removed pb-12 and gap-12. Kept it clean.
+    <div className="w-full min-h-screen bg-[#050505] text-white flex flex-col">
+      
+      {/* Hero Slider Section */}
+      <section className="w-full">
+        <Slider />
+        <CategorySlider />
+      </section>
+      
     </div>
   )
 }
