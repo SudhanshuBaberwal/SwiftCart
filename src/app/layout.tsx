@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Provider from "@/Provider";
+import { Toaster } from "react-hot-toast";
+import StoreProvider from "@/redux/StoreProvider";
+import InitUser from "@/InitUser";
 
 export const metadata: Metadata = {
   title: "MutliCart",
@@ -17,7 +20,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Provider>
-          {children}
+          <StoreProvider>
+            <InitUser />
+            {children}
+          </StoreProvider>
+          <Toaster />
         </Provider>
       </body>
     </html>
