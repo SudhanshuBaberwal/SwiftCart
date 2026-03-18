@@ -20,8 +20,8 @@ const AdminDashBoard = () => {
   const renderPage = () => {
     switch (activePage) {
       case "dashboard": return <Dashboard />;
-      case "vendor": return <VendorDetails />;
-      case "orders": return <UserOrders />;
+      case "vendor Details": return <VendorDetails />;
+      case "User Orders": return <UserOrders />;
       case "vendor-approval": return <VendorApproval />;
       case "product-approval": return <ProductApproval />
     }
@@ -29,11 +29,10 @@ const AdminDashBoard = () => {
 
   const menu = [
     { id: "dashboard", label: "Overview", icon: <MdDashboard size={20} /> },
-    { id: "analytics", label: "Analytics", icon: <FaChartLine size={20} /> },
-    { id: "vendors", label: "Vendors", icon: <FaStore size={20} /> },
-    { id: "orders", label: "Orders", icon: <FaShoppingBag size={20} /> },
-    { id: "approvals", label: "Approvals", icon: <FaCheckCircle size={20} /> },
-    { id: "products", label: "Products", icon: <FaBox size={20} /> }
+    { id: "vendor Details", label: "Vendor Details", icon: <FaStore size={20} /> },
+    { id: "User Orders", label: "User Orders", icon: <FaShoppingBag size={20} /> },
+    { id: "vendor-approval", label: "Approvals", icon: <FaCheckCircle size={20} /> },
+    { id: "product-approval", label: "Products Request", icon: <FaBox size={20} /> }
   ]
 
   return (

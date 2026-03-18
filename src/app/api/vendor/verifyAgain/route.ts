@@ -7,6 +7,12 @@ export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
     const { shopName, shopAddress, gstNumber } = await req.json();
+    if (!shopName || !shopAddress || !gstNumber) {
+      return NextResponse.json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
     const session = await auth();
 
     if (!session?.user?.email) {
@@ -15,7 +21,7 @@ export const POST = async (req: NextRequest) => {
         { status: 400 },
       );
     }
-    const user = await User.findOneAndUpdate(
+    const updatedVendor = await User.findOneAndUpdate(
       { email: session.user?.email },
       {
         shopName,
@@ -23,23 +29,25 @@ export const POST = async (req: NextRequest) => {
         gstNumber,
         verificationStatus: "pending",
         requestAt: new Date(),
+        rejectedReason: null,
+        isApproved: false,
       },
       { new: true },
     );
-    if (!user) {
+    if (!updatedVendor) {
       return NextResponse.json(
-        { message: "User is not found" },
+        { message: "Vendor is not found" },
         { status: 400 },
       );
     }
     return NextResponse.json(
-      { message: "Vendor Details Submitted", user },
+      { message: "Verifiy Again Successfully", updatedVendor },
       { status: 200 },
     );
   } catch (error) {
-    console.log("Error in Edit vendor details API : ", error);
+    console.log("Error in verify again API : ", error);
     return NextResponse.json(
-      { message: "Error in Edit vendor details API" },
+      { message: "Error in verify again API" },
       { status: 400 },
     );
   }

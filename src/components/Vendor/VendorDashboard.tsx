@@ -42,7 +42,7 @@ const VendorDashboard = () => {
         initial={{ x: -40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className='hidden lg:block w-72 bg-gray-800/40 border-r border-gray-700 mt-12 p-6 backdrop-blur-xl'
+        className='hidden lg:block w-72 bg-gray-800/40 border-r border-gray-700  p-6 backdrop-blur-xl'
       >
         <h1 className='text-xl font-bold mb-6'>Vendor Panel</h1>
         <div className='flex flex-col gap-3'>
