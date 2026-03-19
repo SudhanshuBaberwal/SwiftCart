@@ -12,10 +12,8 @@ import toast from 'react-hot-toast'
 import { ClipLoader } from 'react-spinners'
 
 const VendorPage = ({ user }: { user: IUser }) => {
-    // 1. Existing State
     const [isUnlocking, setIsUnlocking] = useState(false);
 
-    // 2. New State for the Edit Modal
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
@@ -32,12 +30,10 @@ const VendorPage = ({ user }: { user: IUser }) => {
         }
     }, [user?.verificationStatus]);
 
-    // Handle Form Input
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // Handle Submission
     const handleReSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -144,7 +140,7 @@ const VendorPage = ({ user }: { user: IUser }) => {
                     <VendorDashboard />
                 </div>
 
-                <div className="absolute inset-0 z-[40] flex flex-col items-center justify-center bg-red-950/40 backdrop-blur-md p-6 text-center">
+                <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-red-950/40 backdrop-blur-md p-6 text-center">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[50%] bg-red-600/10 blur-[150px] rounded-full pointer-events-none" />
 
                     <motion.div
@@ -210,7 +206,7 @@ const VendorPage = ({ user }: { user: IUser }) => {
                 {/* --- UPDATE DETAILS MODAL --- */}
                 <AnimatePresence>
                     {isEditModalOpen && (
-                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -282,7 +278,7 @@ const VendorPage = ({ user }: { user: IUser }) => {
                                                     required
                                                     value={formData.shopAddress}
                                                     onChange={handleInputChange}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all resize-none min-h-[100px]"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all resize-none min-h-25"
                                                 />
                                             </div>
                                         </div>

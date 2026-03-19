@@ -10,8 +10,12 @@ const nextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com", // ✅ ADD THIS
+      },
     ],
   },
 };
 
-export default nextConfig;
+export default nextConfig; 
