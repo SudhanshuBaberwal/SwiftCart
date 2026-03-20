@@ -154,7 +154,7 @@ const ProfilePage = () => {
                 className="relative z-10 w-full max-w-2xl bg-[#0a0a0c]/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden"
             >
                 {/* Header Banner */}
-                <div className="h-32 w-full bg-gradient-to-r from-violet-600/20 to-blue-600/20 relative" />
+                <div className="h-32 w-full bg-linear-to-r from-violet-600/20 to-blue-600/20 relative" />
 
                 <div className="px-6 sm:px-10 pb-10 -mt-16">
                     {/* Avatar Section */}
@@ -167,7 +167,7 @@ const ProfilePage = () => {
                                 {previewImage ? (
                                     <Image src={previewImage} width={128} height={128} className="w-full h-full object-cover" alt="Profile" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-violet-500 to-blue-500 text-4xl font-bold">
+                                    <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-violet-500 to-blue-500 text-4xl font-bold">
                                         {user.name?.charAt(0).toUpperCase() || "U"}
                                     </div>
                                 )}
@@ -226,7 +226,7 @@ const ProfilePage = () => {
                     </div>
 
                     {/* Content Area */}
-                    <div className="relative min-h-[250px]">
+                    <div className="relative min-h-62.5">
                         <AnimatePresence mode="wait">
 
                             {/* --- OVERVIEW TAB --- */}
@@ -362,7 +362,7 @@ const ProfilePage = () => {
                                                 <label className={labelClass}>Shop Address</label>
                                                 <div className="relative">
                                                     <div className="absolute top-3.5 left-0 pl-3.5 pointer-events-none text-gray-500"><LuMapPin size={18} /></div>
-                                                    <textarea {...registerShop('shopAddress')} className={`${inputClass} pl-11 resize-none min-h-[100px]`} placeholder="Full business address" />
+                                                    <textarea {...registerShop('shopAddress')} className={`${inputClass} pl-11 resize-none min-h-25`} placeholder="Full business address" />
                                                 </div>
                                             </div>
 
