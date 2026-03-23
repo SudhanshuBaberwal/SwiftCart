@@ -2,135 +2,180 @@ import mongoose, { Mongoose } from "mongoose";
 import { IUser } from "./user.model";
 
 export interface IProduct {
-  _id?: mongoose.Types.ObjectId;
-  title: string;
-  description: string;
-  price: number;
+    _id?: mongoose.Types.ObjectId;
+    title: string;
+    description: string;
+    price: number;
 
-  stock: number;
-  isStockAvailable?: boolean;
+    stock: number;
+    isStockAvailable?: boolean;
 
-  vendor: IUser;
+    vendor: IUser;
 
-  image1: string;
-  image2: string;
-  image3: string;
-  image4: string;
+    image1: string;
+    image2: string;
+    image3: string;
+    image4: string;
 
-  category: string;
+    category: string;
 
-  isWearable: boolean;
-  sizes?: string[];
-  verificationStatus: "pending" | "approved" | "rejected";
-  requestAt?: Date;
-  approvedAt?: Date;
-  rejectedReason?: string;
+    isWearable: boolean;
+    sizes?: string[];
+    verificationStatus: "pending" | "approved" | "rejected";
+    requestAt?: Date;
+    approvedAt?: Date;
+    rejectedReason?: string;
 
-  isActive?: boolean;
+    isActive?: boolean;
 
-  replacementDay?: number;
-  freeDelivery?: boolean;
-  warranty?: string;
-  payOnDelivery?: boolean;
+    replacementDay?: number;
+    freeDelivery?: boolean;
+    warranty?: string;
+    payOnDelivery?: boolean;
 
-  detailsPoints: string[];
-  reviews?: {
-    user: IUser;
-    rating: number;
-    comment?: string;
-    image?: string;
+    detailsPoints: string[];
+    reviews?: {
+        user: IUser;
+        rating: number;
+        comment?: string;
+        image?: string;
+        createdAt?: Date;
+    }[];
+
     createdAt?: Date;
-  }[];
-
-  createdAt?: Date;
-  updatedAt?: Date;
+    updatedAt?: Date;
 }
 
-const ProductSchema = new mongoose.Schema<IProduct>({
-    title : {
-        type : String,
-        required : true
+const ProductSchema = new mongoose.Schema<IProduct>(
+    {
+        title: {
+            type: String,
+            required: true,
+        },
+        description: {
+            type: String,
+            required: true,
+        },
+        price: {
+            type: Number,
+            required: true,
+        },
+        stock: {
+            type: Number,
+            required: true,
+        },
+        isStockAvailable: {
+            type: Boolean,
+            required: true,
+            default: true,
+        },
+        vendor: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
+        image1: {
+            type: String,
+            required: true,
+        },
+        image2: {
+            type: String,
+            required: true,
+        },
+        image3: {
+            type: String,
+            required: true,
+        },
+        image4: {
+            type: String,
+            required: true,
+        },
+        category: {
+            type: String,
+            required: true,
+        },
+        isWearable: {
+            type: Boolean,
+            default: false,
+        },
+        sizes: {
+            type: [String],
+            default: [],
+        },
+        verificationStatus: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending",
+        },
+        requestAt: {
+            type: Date,
+        },
+        approvedAt: {
+            type: Date,
+        },
+        rejectedReason: {
+            type: String,
+        },
+        isActive: {
+            type: Boolean,
+            default: false,
+        },
+        replacementDay: {
+            type: Number,
+            default: 0,
+        },
+        freeDelivery: {
+            type: Boolean,
+            default: false,
+        },
+        warranty: {
+            type: String,
+            default: "No Warranty",
+        },
+        payOnDelivery: {
+            type: Boolean,
+            default: false,
+        },
+        detailsPoints: {
+            type: [String],
+            default: [],
+        },
+
+        reviews: [
+            {
+                user: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User",
+                    required: true,
+                },
+
+                rating: {
+                    type: Number,
+                    required: true,
+                    min: 1,
+                    max: 5,
+                },
+                comment: {
+                    type: String,
+                    trim: true,
+                },
+
+                image: {
+                    type: String,
+                },
+
+                createdAt: {
+                    type: Date,
+                    default: Date.now,
+                },
+            },
+        ],
     },
-    description : {
-        type : String,
-        required : true
-    },
-    price : {
-        type : Number,
-        required : true
-    },
-    stock : {
-        type : Number,
-        required : true
-    },
-    isStockAvailable : {
-        type : Boolean,
-        required : true,
-        default : true
-    },
-    vendor : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "User"
-    },
-    image1 : {
-        type : String,
-        required : true
-    },
-    image2 : {
-        type : String,
-        required : true
-    },
-    image3 : {
-        type : String,
-        required : true
-    },
-    image4 : {
-        type : String,
-        required : true
-    },
-    category : {
-        type : String,
-        required : true
-    },
-    isWearable : {
-        type : Boolean,
-        default : false
-    },
-    sizes : {
-        type : [String],
-        default : []
-    },
-    verificationStatus : {
-        type : String,
-        enum : ["pending" , "approved" , "rejected"],
-        default : "pending"
-    },
-    requestAt : {
-        type : Date,
-    },
-    approvedAt : {
-        type : Date
-    },
-    rejectedReason : {
-        type : String
-    },
-    isActive : {
-        type : Boolean,
-        default : false
-    },
-    replacementDay : {
-        type : Number,
-        default : 0
-    },
-    freeDelivery : {
-        type : Boolean,
-        default : false
-    },
-    warranty : {
-        type : String,
-        default : "No Warranty"
-    },
-    payOnDelivery : {
-        
-    }
-}, { timestamps: true });
+    { timestamps: true },
+);
+
+const Product =
+    mongoose.models?.Product ||
+    mongoose.model<IProduct>("Product", ProductSchema);
+
+
+export default Product
