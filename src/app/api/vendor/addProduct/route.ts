@@ -1,7 +1,9 @@
 import { auth } from "@/auth";
+import VendorProduct from "@/components/Vendor/VendorProduct";
 import uploadOnCloundinary from "@/lib/cloudinary";
 import connectDB from "@/lib/connectDB";
 import Product from "@/model/product.model";
+import User from "@/model/user.model";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (req: NextRequest) => {
@@ -18,8 +20,8 @@ export const POST = async (req: NextRequest) => {
     const formdata = await req.formData();
     const title = formdata.get("title") as string;
     const description = formdata.get("description") as string;
-    const price = formdata.get("price");
-    const stock = formdata.get("stock");
+    const price = Number(formdata.get("price"));
+    const stock = Number(formdata.get("stock"));
     const category = formdata.get("category") as string;
     const isWearable = formdata.get("isWearable") === "true";
     const sizes = formdata.get("sizes") as string;
@@ -32,6 +34,10 @@ export const POST = async (req: NextRequest) => {
     const img2 = formdata.get("image2") as Blob;
     const img3 = formdata.get("image3") as Blob;
     const img4 = formdata.get("image4") as Blob;
+
+    if (!(img1 instanceof Blob) || !(img2 instanceof Blob) || !(img3 instanceof Blob) || !(img4 instanceof Blob)){
+      return NextResponse.json({ success: false, message: "Invalid image1" }, { status: 400 });
+    }
 
     if (
       !title ||
@@ -67,7 +73,7 @@ export const POST = async (req: NextRequest) => {
       description,
       price,
       stock,
-      // isStockAvailable: stock > 0,
+      isStockAvailable: stock > 0,
       image1,
       image2,
       image3,
@@ -84,9 +90,31 @@ export const POST = async (req: NextRequest) => {
       verificationStatus: "pending",
       isActive: false,
     });
-    
-    return NextResponse.json({ success: true, product }, { status: 200 });
-  } catch (error) {
 
+    const p = await User.findByIdAndUpdate(
+      session.user.id,
+      {
+        $push: { VendorProduct: product._id },
+      },
+      { new: true },
+    );
+
+    if (!p) {
+      return NextResponse.json(
+        { success: false, message: "Product Can't Added" },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, message: "Product Added", product },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.log("Error in Product added API");
+    return NextResponse.json(
+      { success: false, message: "Error Occures in Product Occurs API" },
+      { status: 500 },
+    );
   }
 };

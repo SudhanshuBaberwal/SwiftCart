@@ -89,8 +89,9 @@ const AdminDashBoard = () => {
             </div>
             <div className='flex flex-col gap-3'>
               {
-                menu.map((item) => (
+                menu.map((item , index) => (
                   <button
+                  key={index}
                     onClick={() => { setOpenMenu(false); setActivePage(item.id) }}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm
                     ${activePage == item.id ?
