@@ -66,13 +66,13 @@ const Navbar = ({ user }: NavProps) => {
                     boxShadow: scrolled ? "0 20px 40px -15px rgba(0,0,0,0.5)" : "none"
                 }}
                 className={`max-w-7xl mx-auto rounded-full pointer-events-auto transition-colors duration-500
-                    ${scrolled ? "bg-[#0a0a0c]/80 border border-white/[0.05] backdrop-blur-2xl" : "bg-transparent border border-transparent"}`}
+                    ${scrolled ? "bg-[#0a0a0c]/80 border border-white/5 backdrop-blur-2xl" : "bg-transparent border border-transparent"}`}
             >
                 <div className='px-4 sm:px-6 py-3 flex justify-between items-center relative'>
                     
                     {/* --- Logo --- */}
                     <div onClick={() => router.push("/")} className='flex shrink-0 items-center gap-3 cursor-pointer group z-10'>
-                        <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_25px_rgba(217,70,239,0.5)] transition-all duration-300">
+                        <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-linear-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_25px_rgba(217,70,239,0.5)] transition-all duration-300">
                             <span className="font-bold text-base sm:text-lg text-white">S</span>
                         </div>
                         <span className='text-lg sm:text-xl font-bold tracking-wide hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400'>

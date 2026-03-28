@@ -14,6 +14,7 @@ import Dashboard from './Dashboard'
 const VendorDashboard = () => {
   const [activePage, setActivePage] = useState("dashboard")
   const [openMenu, setOpenMenu] = useState(false)
+  
   const renderPage = () => {
     switch (activePage) {
       case "dashboard": return <Dashboard />;
@@ -26,23 +27,23 @@ const VendorDashboard = () => {
     { id: "dashboard", label: "Overview", icon: <MdDashboard size={20} /> },
     { id: "product", label: "Product", icon: <FaBoxOpen size={20} /> },
     { id: "orders", label: "Orders", icon: <FaShoppingBag size={20} /> },
-    
   ]
 
   return (
     <div className='w-full flex min-h-screen bg-linear-to-r from-gray-900 to-gray-900 text-white'>
-      {/* Mobile Tab bar */}
-      <div className='lg:hidden fixed top-15 left-0 w-full bg-black px-6 py-3 flex justify-between items-center border-b border-gray-700 z-50'>
+      
+      {/* Mobile Tab bar - Pushed down to top-[80px] to sit below the global Navbar */}
+      <div className='lg:hidden fixed top-[80px] left-0 w-full bg-black px-6 py-3 flex justify-between items-center border-b border-gray-700 z-40'>
         <h1 className='text-xl font-bold'>Vendor Panel</h1>
         {!openMenu && <button onClick={() => setOpenMenu(true)}><AiOutlineMenu size={25} /></button>}
       </div>
 
-      {/* sidebar for large */}
+      {/* sidebar for large - Added pt-[100px] so the top items aren't hidden behind the floating Navbar */}
       <motion.div
         initial={{ x: -40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className='hidden lg:block w-72 bg-gray-800/40 border-r border-gray-700  p-6 backdrop-blur-xl'
+        className='hidden lg:block w-72 bg-gray-800/40 border-r border-gray-700 p-6 pt-[100px] backdrop-blur-xl'
       >
         <h1 className='text-xl font-bold mb-6'>Vendor Panel</h1>
         <div className='flex flex-col gap-3'>
@@ -73,7 +74,8 @@ const VendorDashboard = () => {
             animate={{ x: 0 }}
             exit={{ x: -300 }}
             transition={{ duration: 0.3 }}
-            className='lg:hidden fixed top-0 left-0 w-72 h-full bg-gray-800/90 backdrop-blur-xl p-6 z-50 border-r border-gray-700'
+            /* Increased z-index to 70 so the mobile drawer safely covers everything, including the global Navbar */
+            className='lg:hidden fixed top-0 left-0 w-72 h-full bg-gray-800/90 backdrop-blur-xl p-6 z-[70] border-r border-gray-700'
           >
             <div className='flex justify-between items-center mb-6'>
               <h1 className='text-xl font-bold'>Vendor Panel</h1>
@@ -104,20 +106,20 @@ const VendorDashboard = () => {
           </motion.div>)}
       </AnimatePresence>
 
-      {/* Main Area */}
+      {/* Main Area - Changed margins/padding to mt-[140px] for mobile and pt-[100px] for desktop to clear headers */}
       <motion.div
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4 }}
-        className='flex-1 p-10 mt-16 lg:mt-0'
+        className='flex-1 p-6 sm:p-10 mt-[140px] lg:mt-0 lg:pt-[100px]'
       >
         {renderPage()}
       </motion.div>
 
     </div>
   )
-
 }
+
 
 //   return (
 //     // ADDED `pt-24` HERE to push the dashboard content below the fixed Navbar
