@@ -75,14 +75,14 @@ const Navbar = ({ user }: NavProps) => {
                         <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-linear-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_25px_rgba(217,70,239,0.5)] transition-all duration-300">
                             <span className="font-bold text-base sm:text-lg text-white">S</span>
                         </div>
-                        <span className='text-lg sm:text-xl font-bold tracking-wide hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400'>
+                        <span className='text-lg sm:text-xl font-bold tracking-wide hidden sm:inline bg-clip-text text-transparent bg-linear-to-r from-white to-gray-400'>
                             SwiftCart
                         </span>
                     </div>
 
                     {/* --- Desktop Center Links (Hidden on mobile/tablet to prevent overlap) --- */}
                     {isConsumerView && (
-                        <div className='hidden lg:flex items-center absolute left-1/2 -translate-x-1/2 bg-white/[0.02] border border-white/[0.03] rounded-full p-1.5 backdrop-blur-md'>
+                        <div className='hidden lg:flex items-center absolute left-1/2 -translate-x-1/2 bg-white/2 border border-white/3 rounded-full p-1.5 backdrop-blur-md'>
                             <NavItem label="Home" path="/" router={router} isActive={pathname === "/"} />
                             <NavItem label="Categories" path="/categories" router={router} isActive={pathname === "/categories"} />
                             <NavItem label="Shop" path="/shop" router={router} isActive={pathname === "/shop"} />
@@ -106,7 +106,7 @@ const Navbar = ({ user }: NavProps) => {
                         <div className='relative hidden sm:block' ref={dropdownRef}>
                             <button 
                                 onClick={() => setOpenMenu(!openMenu)}
-                                className="flex items-center gap-2 sm:gap-3 pl-2 pr-2 sm:pr-4 py-1.5 rounded-full hover:bg-white/[0.04] transition-colors border border-transparent hover:border-white/[0.05]"
+                                className="flex items-center gap-2 sm:gap-3 pl-2 pr-2 sm:pr-4 py-1.5 rounded-full hover:bg-white/4 transition-colors border border-transparent hover:border-white/5"
                             >
                                 {user?.image ? (
                                     <img src={user.image} alt='user' className='w-8 h-8 rounded-full object-cover border border-white/10' />
@@ -115,7 +115,7 @@ const Navbar = ({ user }: NavProps) => {
                                         <AiOutlineUser size={16} />
                                     </div>
                                 )}
-                                {user && <span className="text-sm font-medium text-gray-300 hidden md:block max-w-[100px] truncate">{user.name || "User"}</span>}
+                                {user && <span className="text-sm font-medium text-gray-300 hidden md:block max-w-25 truncate">{user.name || "User"}</span>}
                             </button>
 
                             {/* Dropdown Menu */}
@@ -126,14 +126,14 @@ const Navbar = ({ user }: NavProps) => {
                                         animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
                                         exit={{ opacity: 0, y: 10, scale: 0.95, filter: "blur(4px)" }}
                                         transition={{ duration: 0.2, ease: "easeOut" }}
-                                        className='absolute right-0 mt-4 w-56 sm:w-60 bg-[#0a0a0c]/95 backdrop-blur-xl border border-white/[0.05] rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden p-2 z-50'
+                                        className='absolute right-0 mt-4 w-56 sm:w-60 bg-[#0a0a0c]/95 backdrop-blur-xl border border-white/5 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden p-2 z-50'
                                     >
-                                        <div className="px-4 py-3 border-b border-white/[0.05] mb-2">
+                                        <div className="px-4 py-3 border-b border-white/5 mb-2">
                                             <p className="text-sm font-semibold text-white truncate">{user?.name || "Guest Account"}</p>
                                             <p className="text-xs text-gray-500 truncate">{user?.email || "Sign in to manage orders"}</p>
                                         </div>
 
-                                        <button onClick={() => { router.push("/profile"); setOpenMenu(false) }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/[0.04] rounded-xl transition-colors">
+                                        <button onClick={() => { router.push("/profile"); setOpenMenu(false) }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/4 rounded-xl transition-colors">
                                             <AiOutlineUser size={18} className="text-gray-500" /> Profile
                                         </button>
 
@@ -152,7 +152,7 @@ const Navbar = ({ user }: NavProps) => {
                         </div>
 
                         {/* Hamburger Menu - Visible on tablet/mobile when center links hide */}
-                        <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 sm:p-2 ml-1 text-gray-300 hover:text-white hover:bg-white/[0.05] rounded-full transition-colors">
+                        <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 sm:p-2 ml-1 text-gray-300 hover:text-white hover:bg-white/5 rounded-full transition-colors">
                             <AiOutlineMenu size={24} />
                         </button>
                     </div>
@@ -162,7 +162,7 @@ const Navbar = ({ user }: NavProps) => {
             {/* --- Mobile Sidebar Overlay & Drawer --- */}
             <AnimatePresence>
                 {sidebarOpen && (
-                    <div className="fixed inset-0 z-[100] pointer-events-auto">
+                    <div className="fixed inset-0 z-100 pointer-events-auto">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setSidebarOpen(false)} />
 
                         <motion.div
@@ -172,10 +172,10 @@ const Navbar = ({ user }: NavProps) => {
                         >
                             <div className='flex justify-between items-center mb-8'>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-white text-sm">S</div>
+                                    <div className="w-8 h-8 rounded-lg bg-linear-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-white text-sm">S</div>
                                     <h1 className='text-lg font-bold'>Menu</h1>
                                 </div>
-                                <button onClick={() => setSidebarOpen(false)} className='p-2 bg-white/[0.02] border border-white/[0.05] rounded-full hover:bg-white/[0.05] transition-colors'>
+                                <button onClick={() => setSidebarOpen(false)} className='p-2 bg-white/2 border border-white/5 rounded-full hover:bg-white/5 transition-colors'>
                                     <AiOutlineClose size={18} />
                                 </button>
                             </div>
@@ -190,7 +190,7 @@ const Navbar = ({ user }: NavProps) => {
                                     </>
                                 )}
                                 
-                                <div className="h-px w-full bg-white/[0.05] my-4" /> 
+                                <div className="h-px w-full bg-white/5 my-4" /> 
                                 
                                 <MobileNavBtn label="Profile" Icon={AiOutlineUser} isActive={pathname === "/profile"} onClick={() => { router.push("/profile"); setSidebarOpen(false) }} />
 
@@ -224,7 +224,7 @@ const NavItem = ({ label, path, router, isActive }: NavItemProps) => (
         {isActive && (
             <motion.div
                 layoutId="desktop-nav-pill"
-                className="absolute inset-0 bg-white/[0.06] border border-white/[0.05] rounded-full"
+                className="absolute inset-0 bg-white/6 border border-white/5 rounded-full"
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
         )}
@@ -237,7 +237,7 @@ const NavItem = ({ label, path, router, isActive }: NavItemProps) => (
 const IconBtn = ({ Icon, onClick, badgeCount, highlight, className = '' }: IconBtnProps) => (
     <button
         onClick={onClick}
-        className={`relative p-2 sm:p-2.5 rounded-full transition-all duration-300 ${highlight ? 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20' : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'} ${className}`}
+        className={`relative p-2 sm:p-2.5 rounded-full transition-all duration-300 ${highlight ? 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'} ${className}`}
     >
         <Icon size={20} />
         {badgeCount !== undefined && badgeCount > 0 && (
@@ -254,7 +254,7 @@ const MobileNavBtn = ({ label, Icon, onClick, isActive }: { label: string, Icon:
         onClick={onClick}
     >
         {isActive && (
-            <motion.div layoutId="mobile-nav-bg" className="absolute inset-0 bg-white/[0.05] border border-white/[0.05] rounded-2xl" />
+            <motion.div layoutId="mobile-nav-bg" className="absolute inset-0 bg-white/5 border border-white/5 rounded-2xl" />
         )}
         <Icon size={22} className={`relative z-10 transition-colors ${isActive ? "text-violet-400" : "text-gray-500 group-hover:text-gray-300"}`} />
         <span className={`relative z-10 transition-colors ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200"}`}>{label}</span>
