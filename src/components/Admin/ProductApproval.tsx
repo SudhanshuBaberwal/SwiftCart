@@ -18,6 +18,7 @@ import {
   LuBox, LuTruck, LuCheck, LuCircle, LuInbox,
   LuArrowLeft, LuLoaderCircle
 } from 'react-icons/lu'
+import { setAllProductsData } from '@/redux/vendorSlice'
 
 const ProductApproval = () => {
   UseGetAllProductsData()
@@ -60,10 +61,13 @@ const ProductApproval = () => {
     try {
       await axios.post("/api/admin/update-product-status", { productId: SelectedProduct._id, status: "approved" })
 
-      const updated = allProductsData.map((p) =>
-        p._id === SelectedProduct._id ? { ...p, verificationStatus: "approved" } : p
-      )
-      dispatch({ type: 'vendor/setAllProductsData', payload: updated }) 
+      // const updated = allProductsData.map((p) =>
+      //   p._id === SelectedProduct._id ? { ...p, verificationStatus: "approved" } : p
+      // )
+      const updated = allProductsData.filter((v) => v._id !== SelectedProduct._id)
+      // dispatch({ type: 'vendor/setAllProductsData', payload: updated }) 
+      dispatch(setAllProductsData(updated))
+      setSelectedProduct(null)
 
       toast.success(`${SelectedProduct.title} Approved Successfully!`, {
         style: { background: '#1c1c1e', color: '#10b981', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' },
@@ -169,11 +173,11 @@ const ProductApproval = () => {
                     <div className="flex items-center gap-4">
                       {/* Product Image Box */}
                       <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center p-1 shrink-0">
-                        <Image 
-                          src={product.image1 || '/placeholder.png'} 
-                          fill 
-                          className='object-contain rounded-lg' 
-                          alt={product.title} 
+                        <Image
+                          src={product.image1 || '/placeholder.png'}
+                          fill
+                          className='object-contain rounded-lg'
+                          alt={product.title}
                         />
                       </div>
                       <span className="font-medium text-gray-200 line-clamp-2 max-w-[250px] leading-snug">{product.title}</span>
