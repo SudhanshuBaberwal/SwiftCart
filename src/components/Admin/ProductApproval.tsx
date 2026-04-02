@@ -64,7 +64,10 @@ const ProductApproval = () => {
       // const updated = allProductsData.map((p) =>
       //   p._id === SelectedProduct._id ? { ...p, verificationStatus: "approved" } : p
       // )
-      const updated = allProductsData.filter((v) => v._id !== SelectedProduct._id)
+
+      const updated = Array.isArray(allProductsData)
+        ? allProductsData.filter((v) => v._id !== SelectedProduct._id)
+        : [];
       // dispatch({ type: 'vendor/setAllProductsData', payload: updated }) 
       dispatch(setAllProductsData(updated))
       setSelectedProduct(null)
@@ -102,10 +105,12 @@ const ProductApproval = () => {
         rejectReason: rejectedReason
       })
 
-      const updated = allProductsData.map((p) =>
-        p._id === SelectedProduct._id ? { ...p, verificationStatus: "rejected" } : p
-      )
-      dispatch({ type: 'vendor/setAllProductsData', payload: updated })
+      const updated = Array.isArray(allProductsData)
+        ? allProductsData.filter((v) => v._id !== SelectedProduct._id)
+        : [];
+      // dispatch({ type: 'vendor/setAllProductsData', payload: updated }) 
+      dispatch(setAllProductsData(updated))
+      // setSelectedProduct(null)
 
       toast.success(`${SelectedProduct.title} has been rejected.`, {
         style: { background: '#1c1c1e', color: '#ef4444', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' },
