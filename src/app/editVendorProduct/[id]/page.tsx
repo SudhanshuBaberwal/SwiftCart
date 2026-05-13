@@ -33,7 +33,8 @@ const UpdateProduct = () => {
   // Redux Data
   const { allProdutctsData } = useSelector((state: RootState) => state.vendor)
   console.log(allProdutctsData)
-  const product = allProdutctsData?.find((p: any) => String(p._id) === String(productId))
+  const product = Array.isArray(allProdutctsData) ?  allProdutctsData?.find((p: any) => String(p._id) === String(productId)) : null
+  console.log(product)
 
   // Form States
   const [title, setTitle] = useState("")
