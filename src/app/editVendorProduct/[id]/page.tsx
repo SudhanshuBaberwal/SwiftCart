@@ -31,9 +31,13 @@ const UpdateProduct = () => {
   const [loading, setLoading] = useState(false)
 
   // Redux Data
-  const { allProdutctsData } = useSelector((state: RootState) => state.vendor)
-  console.log(allProdutctsData)
-  const product = Array.isArray(allProdutctsData) ?  allProdutctsData?.find((p: any) => String(p._id) === String(productId)) : null
+  const { allProdutctsData: allProductsData } = useSelector((state: RootState) => state.vendor)
+  console.log(allProductsData)
+  const productsArray = allProductsData?.product || [];
+
+  const product = productsArray.find(
+    (p: any) => String(p._id) === String(productId)
+  );
   console.log(product)
 
   // Form States
@@ -64,7 +68,7 @@ const UpdateProduct = () => {
     setDescription(product.description || "")
     setPrice(String(product.price))
     setStock(String(product.stock))
-    
+
     // Logic for Custom Category
     if (categories.includes(product.category)) {
       setCategory(product.category)
@@ -82,18 +86,18 @@ const UpdateProduct = () => {
     setDetailPoints(product.detailsPoints || [])
 
 
-   const productImages = [
-  product.image1,
-  product.image2,
-  product.image3,
-  product.image4,
-];
+    const productImages = [
+      product.image1,
+      product.image2,
+      product.image3,
+      product.image4,
+    ];
 
-productImages.forEach((url, index) => {
-  if (url && index < 4) {
-    previews[index] = url;
-  }
-});
+    productImages.forEach((url, index) => {
+      if (url && index < 4) {
+        previews[index] = url;
+      }
+    });
   }, [product])
 
   // Handlers
@@ -138,12 +142,13 @@ productImages.forEach((url, index) => {
 
     // Check if all 4 slots have either a File OR an existing URL
     if (previews.some(p => p === null)) {
-        toast.error("All 4 image slots must be filled (new or existing).")
-        return
+      toast.error("All 4 image slots must be filled (new or existing).")
+      return
     }
 
     setLoading(true)
     const formdata = new FormData()
+    formdata.append("productId", productId)
     formdata.append("title", title)
     formdata.append("description", description)
     formdata.append("price", price)
@@ -171,9 +176,9 @@ productImages.forEach((url, index) => {
 
     try {
       // Changed to PUT and added productId
-      await axios.put(`/api/vendor/updateProduct/${productId}`, formdata)
+      await axios.post(`/api/vendor/updateProduct`, formdata)
       toast.success("Product updated successfully!")
-      setTimeout(() => router.push("/vendor/dashboard"), 1500)
+      setTimeout(() => router.push("/"), 1500)
     } catch (error) {
       console.error("Update Error:", error)
       toast.error("Failed to update product.")
@@ -222,7 +227,7 @@ productImages.forEach((url, index) => {
         className='relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-8'
       >
         <div className="flex flex-col lg:flex-row gap-8">
-          
+
           <div className="flex-1 space-y-8">
             {/* General Info */}
             <div className={sectionClass}>
@@ -275,19 +280,19 @@ productImages.forEach((url, index) => {
 
             {/* Highlights */}
             <div className={sectionClass}>
-                <h2 className="text-lg font-bold flex items-center gap-2 mb-2"><LuListPlus className="text-yellow-400" /> Key Highlights</h2>
-                <div className='flex gap-3'>
-                    <input type="text" className={inputClass} placeholder='Add highlight...' value={currentPoint} onChange={(e) => setCurrentPoint(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddPoint())} />
-                    <button type='button' onClick={handleAddPoint} className='px-6 bg-white/10 rounded-xl font-bold'>Add</button>
-                </div>
-                <div className='mt-4 space-y-2'>
-                    {detailPoints.map((point, index) => (
-                        <div key={index} className='flex justify-between items-center bg-[#030305] border border-white/5 p-3 rounded-xl'>
-                            <span className='text-sm text-gray-200'>{point}</span>
-                            <button type='button' onClick={() => removePoint(index)} className='text-gray-500 hover:text-red-400'><LuX size={16} /></button>
-                        </div>
-                    ))}
-                </div>
+              <h2 className="text-lg font-bold flex items-center gap-2 mb-2"><LuListPlus className="text-yellow-400" /> Key Highlights</h2>
+              <div className='flex gap-3'>
+                <input type="text" className={inputClass} placeholder='Add highlight...' value={currentPoint} onChange={(e) => setCurrentPoint(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddPoint())} />
+                <button type='button' onClick={handleAddPoint} className='px-6 bg-white/10 rounded-xl font-bold'>Add</button>
+              </div>
+              <div className='mt-4 space-y-2'>
+                {detailPoints.map((point, index) => (
+                  <div key={index} className='flex justify-between items-center bg-[#030305] border border-white/5 p-3 rounded-xl'>
+                    <span className='text-sm text-gray-200'>{point}</span>
+                    <button type='button' onClick={() => removePoint(index)} className='text-gray-500 hover:text-red-400'><LuX size={16} /></button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -308,11 +313,11 @@ productImages.forEach((url, index) => {
 
             {/* Pricing */}
             <div className={sectionClass}>
-                <h2 className="text-lg font-bold flex items-center gap-2 mb-4"><LuDollarSign className="text-emerald-400" /> Pricing & Stock</h2>
-                <div className="space-y-4">
-                    <input type="number" className={inputClass} placeholder='Price' value={price} onChange={(e) => setPrice(e.target.value)} />
-                    <input type="number" className={inputClass} placeholder='Stock' value={stock} onChange={(e) => setStock(e.target.value)} />
-                </div>
+              <h2 className="text-lg font-bold flex items-center gap-2 mb-4"><LuDollarSign className="text-emerald-400" /> Pricing & Stock</h2>
+              <div className="space-y-4">
+                <input type="number" className={inputClass} placeholder='Price' value={price} onChange={(e) => setPrice(e.target.value)} />
+                <input type="number" className={inputClass} placeholder='Stock' value={stock} onChange={(e) => setStock(e.target.value)} />
+              </div>
             </div>
 
             {/* Apparel */}
