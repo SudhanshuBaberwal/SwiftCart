@@ -41,7 +41,7 @@ export const POST = async (req: NextRequest) => {
     const stock = Number(formdata.get("stock"));
     const category = formdata.get("category") as string;
     const isWearable = formdata.get("isWearable") === "true";
-    const sizes = formdata.getAll("sizes") as string[];         // updated 
+    const sizes = formdata.getAll("sizes") as string[]; // updated
     const replacementDays = Number(formdata.get("replacementDays") || 0);
     const freeDelivery = formdata.get("freeDelivery") === "true";
     const warranty = (formdata.get("warranty") as string) || "No Warranty";
@@ -51,7 +51,7 @@ export const POST = async (req: NextRequest) => {
     const img3 = formdata.get("image3") as Blob | null;
     const img4 = formdata.get("image4") as Blob | null;
     const img2 = formdata.get("image2") as Blob | null;
-    const status = formdata.get("")
+    // const status = formdata.get("")
 
     let image1 = product.image1;
     let image2 = product.image2;
@@ -101,8 +101,8 @@ export const POST = async (req: NextRequest) => {
         detailsPoints,
         verificationStatus: "pending",
         isActive: false,
-        
-        
+        approvedAt: undefined,
+        rejectedReason: undefined,
       },
       { new: true },
     );
