@@ -2,6 +2,7 @@
 import React from 'react'
 import Slider from './Slider'
 import CategorySlider from './CategorySlider'
+import ProductCardPage from './ProductCardPage'
 
 const UserDashBoard = () => {
   return (
@@ -12,6 +13,7 @@ const UserDashBoard = () => {
       <section className="w-full">
         <Slider />
         <CategorySlider />
+        <ProductCardPage/>
       </section>
       
     </div>

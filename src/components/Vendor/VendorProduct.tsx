@@ -2,8 +2,8 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/redux/store'
+import { useDispatch, useSelector } from 'react-redux'
+import { AppDispatch, RootState } from '@/redux/store'
 import { motion } from 'motion/react'
 import {
   LuPackageOpen, LuPlus, LuFileDigit,
@@ -13,32 +13,44 @@ import {
 import { LucideAlertCircle } from 'lucide-react'
 import UseGetCurrentUser from '@/hooks/UseGetCurrentUser'
 import UseGetAllProductsData from '@/hooks/UseGetAllProductsData'
+import axios from 'axios'
+import { setAllProductsData } from '@/redux/vendorSlice'
+import toast from 'react-hot-toast'
 
 const VendorProduct = () => {
   UseGetCurrentUser()
   UseGetAllProductsData()
-  
+
   const router = useRouter()
 
   const currentUser = useSelector((state: RootState) => state.user.userData)
-  console.log(currentUser)
-
   const allProductsData = useSelector((state: RootState) => state.vendor.allProdutctsData)
-  console.log(allProductsData[0])
+  
+  const dispatch = useDispatch<AppDispatch>()
 
   const products = Array.isArray(allProductsData) ? allProductsData : allProductsData?.product || []
 
-  const myProducts = products.filter((p : any) => {
+  const myProducts = products.filter((p: any) => {
     if (!p.vendor) return false;
     return String(p.vendor?._id || p.vendor) === String(currentUser?._id)
   })
-  // console.log(currentUser?._id)
-  // console.log(allProductsData.length)
-  // const myProducts = currentUser?._id && allProductsData.length > 0 ?
 
-  //   allProductsData.filter((p: any) => p.vendor === currentUser._id || p.vendor?._id === currentUser?._id) : []
+  const toggleIsActive = async (productId: string, currentIsActive: boolean) => {
+    try {
+      const result = await axios.post("/api/vendor/isActiveProduct", { productId, isActive: !currentIsActive })
+      const updatedProduct = products.map((p: any) =>
+        String(p._id) === String(productId)
+          ? { ...p, isActive: result.data.isActive }
+          : p
+      )
 
-  //   console.log(myProducts)
+      dispatch(setAllProductsData(updatedProduct))
+      toast.success("Product Toggled Successfully")
+    } catch (error) {
+      console.log("Error in toggleIsActive Function", error)
+      toast.error("Error in toggleIsActive")
+    }
+  }
 
 
   // Helper for status colors
@@ -147,15 +159,20 @@ const VendorProduct = () => {
                         {/* Actions */}
                         <td className='p-5 text-right'>
                           <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            
+                            {/* FIXED: Restored router.push to Edit button */}
                             <button
                               onClick={() => router.push(`/editVendorProduct/${p._id}`)}
-                              className='p-2 rounded-lg bg-white/5 hover:bg-violet-600/20 text-gray-400 hover:text-violet-400 transition-colors'
+                              className='p-2 rounded-lg bg-white/5 hover:bg-violet-600/20 text-gray-400 hover:text-violet-400 transition-colors cursor-pointer'
                               title="Edit Product"
                             >
                               <LuFileDigit size={18} />
                             </button>
+
+                            {/* FIXED: Added onClick to Enable/Disable button */}
                             <button
                               disabled={p.verificationStatus !== "approved"}
+                              onClick={() => toggleIsActive(String(p._id), Boolean(p.isActive))}
                               className={`p-2 rounded-lg transition-colors ${p.verificationStatus === "approved"
                                 ? p.isActive
                                   ? 'bg-white/5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-400'
@@ -216,8 +233,11 @@ const VendorProduct = () => {
                       >
                         <LuFileDigit size={16} /> Edit
                       </button>
+
+                      {/* FIXED: Added onClick to mobile Enable/Disable button */}
                       <button
                         disabled={p.verificationStatus !== "approved"}
+                        onClick={() => toggleIsActive(String(p._id), Boolean(p.isActive))}
                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium transition-colors ${p.verificationStatus === "approved"
                           ? p.isActive
                             ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20'
