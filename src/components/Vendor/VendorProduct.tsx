@@ -13,7 +13,7 @@ import {
 import { LucideAlertCircle } from 'lucide-react'
 import UseGetCurrentUser from '@/hooks/UseGetCurrentUser'
 import UseGetAllProductsData from '@/hooks/UseGetAllProductsData'
-import axios from 'axios'
+import axios, { all } from 'axios'
 import { setAllProductsData } from '@/redux/vendorSlice'
 import toast from 'react-hot-toast'
 
@@ -24,11 +24,22 @@ const VendorProduct = () => {
   const router = useRouter()
 
   const currentUser = useSelector((state: RootState) => state.user.userData)
-  const allProductsData = useSelector((state: RootState) => state.vendor.allProdutctsData)
-  
+  const allProductsData = useSelector(
+    (state: RootState) =>
+      state.vendor.allProdutctsData?.product || []
+  )
+  // console.log(allProductsData)
   const dispatch = useDispatch<AppDispatch>()
 
-  const products = Array.isArray(allProductsData) ? allProductsData : allProductsData?.product || []
+  const products = Array.isArray(allProductsData)
+    ? allProductsData
+    : allProductsData?.product || []
+
+  // const product = products.filter(
+  //   (p: any) =>
+  //     p.isActive === true &&
+  //     p.verificationStatus === "approved"
+  // )
 
   const myProducts = products.filter((p: any) => {
     if (!p.vendor) return false;
@@ -44,7 +55,7 @@ const VendorProduct = () => {
           : p
       )
 
-      dispatch(setAllProductsData(updatedProduct))
+      dispatch(setAllProductsData({product : updatedProduct}))
       toast.success("Product Toggled Successfully")
     } catch (error) {
       console.log("Error in toggleIsActive Function", error)
@@ -159,7 +170,7 @@ const VendorProduct = () => {
                         {/* Actions */}
                         <td className='p-5 text-right'>
                           <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            
+
                             {/* FIXED: Restored router.push to Edit button */}
                             <button
                               onClick={() => router.push(`/editVendorProduct/${p._id}`)}
