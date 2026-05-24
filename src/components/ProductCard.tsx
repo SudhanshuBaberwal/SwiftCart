@@ -7,6 +7,8 @@ import { FaStar, FaShoppingCart, FaStore } from 'react-icons/fa'
 import { FiChevronLeft, FiChevronRight, FiHeart } from 'react-icons/fi'
 import { IProduct } from '@/model/product.model'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 
 interface ProductCardProps {
   product: IProduct
@@ -27,7 +29,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   // Dynamic review and rating mathematical calculations
   const totalReviews = product?.reviews?.length ?? 0
-  const avgRating = totalReviews > 0 
+  const avgRating = totalReviews > 0
     ? (product.reviews!.reduce((sum: number, r: any) => sum + r.rating, 0) / totalReviews).toFixed(1)
     : '0.0'
 
@@ -43,6 +45,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     setCurrent((prev) => (prev - 1 + images.length) % images.length)
   }
 
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const result = await axios.post("/api/user/cart/add", { productId: product._id, quantity: 1 })
+      toast.success("Added to Cart")
+      router.push("/cart")
+    } catch (error) {
+      console.log("Error in ProductCart Cart add function")
+    }
+  }
+
   return (
     <motion.div
       onClick={() => router.push(`/viewProduct/${product._id}`)}
@@ -56,12 +69,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       {/* --- IMAGE CONTAINER (Fixed 240px Height) --- */}
       <div className="relative w-full h-[240px] bg-[#16161c] border-b border-white/[0.04] overflow-hidden flex items-center justify-center p-6 shrink-0">
-        
+
         {/* Subtle radial ambient backdrop glow on card hover */}
         <div className="absolute inset-0 bg-radial from-violet-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
         {/* Animated Product Image Wrapper */}
-        <motion.div 
+        <motion.div
           animate={{ scale: isHovered ? 1.04 : 1, y: isHovered ? -4 : 0 }}
           transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
           className="relative w-full h-full z-10"
@@ -84,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
 
         {/* Wishlist Icon Button */}
-        <button 
+        <button
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
           className="absolute top-3.5 right-3.5 z-20 bg-[#0d0d11]/60 backdrop-blur-md p-2 rounded-full text-gray-400 hover:text-rose-400 border border-white/5 hover:border-rose-500/20 transition-all duration-300 shadow-md"
         >
@@ -106,7 +119,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 >
                   <FiChevronLeft size={16} />
                 </motion.button>
-                
+
                 {/* Right Arrow Button */}
                 <motion.button
                   initial={{ opacity: 0, x: 6 }}
@@ -119,18 +132,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 </motion.button>
 
                 {/* Carousel Navigation Indicator Dots */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 6 }}
                   className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-20 bg-black/60 px-2 py-1 rounded-full backdrop-blur-md border border-white/10"
                 >
                   {images.map((_, i) => (
-                    <span 
-                      key={i} 
-                      className={`h-1 rounded-full transition-all duration-300 ${
-                        current === i ? "w-3.5 bg-violet-400" : "w-1 bg-white/30"
-                      }`}
+                    <span
+                      key={i}
+                      className={`h-1 rounded-full transition-all duration-300 ${current === i ? "w-3.5 bg-violet-400" : "w-1 bg-white/30"
+                        }`}
                     />
                   ))}
                 </motion.div>
@@ -148,7 +160,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <h3 className="font-semibold text-gray-200 leading-snug line-clamp-2 text-sm flex-grow group-hover:text-violet-400 transition-colors duration-300">
               {product.title}
             </h3>
-            
+
             <div className="flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded text-[10px] border border-amber-500/20 shrink-0 text-amber-400 font-bold">
               <FaStar size={9} />
               <span>{avgRating} <span className="text-gray-500 font-normal">({totalReviews})</span></span>
@@ -174,12 +186,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Primary Action Button */}
-          <motion.button 
+          <motion.button
+          
             whileTap={{ scale: 0.97 }}
-            onClick={(e) => {
-              e.stopPropagation()
-              e.preventDefault()
-            }}
+            onClick={handleAddToCart}
             className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_4px_12px_rgba(124,58,237,0.15)] hover:shadow-[0_4px_20px_rgba(124,58,237,0.35)]"
           >
             <FaShoppingCart size={13} /> Add To Cart

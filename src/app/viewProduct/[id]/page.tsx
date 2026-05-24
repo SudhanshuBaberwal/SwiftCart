@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useSelector } from 'react-redux'
 import { motion, AnimatePresence } from 'motion/react'
@@ -44,6 +44,7 @@ const ViewProduct = () => {
   const [preview, setPreview] = useState<string | null>(null)
   const [activeImage, setActiveImage] = useState(0)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   // Find targeted item matching page params route parameter
   const product: IProduct | undefined = products.find(
@@ -97,6 +98,19 @@ const ViewProduct = () => {
   const avgRating = product && totalReviews > 0 ? (
     product.reviews!.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / totalReviews
   ).toFixed(1) : '0.0'
+
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const result = await axios.post("/api/user/cart/add", { productId: productId, quantity: 1 })
+      toast.success("Added to Cart")
+      router.push("/cart")
+    } catch (error) {
+      console.log("Error in ProductCart Cart add function")
+    }
+  }
+
 
   return (
     <div className="min-h-screen w-full bg-[#09090b] text-gray-100 relative overflow-hidden px-4 sm:px-6 lg:px-8 py-10">
@@ -203,6 +217,7 @@ const ViewProduct = () => {
 
               {/* Form Trigger Primary Add Actions Button */}
               <motion.button
+                onClick={handleAddToCart}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold rounded-xl py-3.5 text-sm transition-all duration-300 shadow-[0_4px_20px_rgba(124,58,237,0.25)] flex items-center justify-center gap-2"
