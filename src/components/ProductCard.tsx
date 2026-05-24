@@ -15,6 +15,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false)
   const [current, setCurrent] = useState(0)
+  const router = useRouter()
 
   // Extract valid image URLs into an array
   const images = [
@@ -23,6 +24,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     product.image3,
     product.image4,
   ].filter(Boolean) as string[]
+
+  // Dynamic review and rating mathematical calculations
+  const totalReviews = product?.reviews?.length ?? 0
+  const avgRating = totalReviews > 0 
+    ? (product.reviews!.reduce((sum: number, r: any) => sum + r.rating, 0) / totalReviews).toFixed(1)
+    : '0.0'
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -36,19 +43,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     setCurrent((prev) => (prev - 1 + images.length) % images.length)
   }
 
-  const router = useRouter()
-
   return (
     <motion.div
-
-    onClick={() => router.push(`/viewProduct/${product._id}`)}
+      onClick={() => router.push(`/viewProduct/${product._id}`)}
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 18 }}
       viewport={{ once: true, amount: 0.05 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative w-full max-w-[310px] mx-auto bg-[#0d0d11] border border-white/[0.06] hover:border-violet-500/40 rounded-2xl overflow-hidden shadow-xl hover:shadow-[0_12px_35px_rgba(139,92,246,0.12)] transition-all duration-500 flex flex-col h-[450px]"
+      className="group relative w-full max-w-[310px] mx-auto bg-[#0d0d11] border border-white/[0.06] hover:border-violet-500/40 rounded-2xl overflow-hidden shadow-xl hover:shadow-[0_12px_35px_rgba(139,92,246,0.12)] transition-all duration-500 flex flex-col h-[450px] cursor-pointer"
     >
       {/* --- IMAGE CONTAINER (Fixed 240px Height) --- */}
       <div className="relative w-full h-[240px] bg-[#16161c] border-b border-white/[0.04] overflow-hidden flex items-center justify-center p-6 shrink-0">
@@ -139,7 +143,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* --- CONTENT BLOCK --- */}
       <div className="p-4 flex flex-col flex-grow justify-between bg-[#0d0d11]">
         <div>
-          {/* Title Line & Rating Badge */}
+          {/* Title Line & Dynamic Rating Badge */}
           <div className="flex justify-between items-start gap-2 mb-1.5">
             <h3 className="font-semibold text-gray-200 leading-snug line-clamp-2 text-sm flex-grow group-hover:text-violet-400 transition-colors duration-300">
               {product.title}
@@ -147,7 +151,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             
             <div className="flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded text-[10px] border border-amber-500/20 shrink-0 text-amber-400 font-bold">
               <FaStar size={9} />
-              <span>5.0</span>
+              <span>{avgRating} <span className="text-gray-500 font-normal">({totalReviews})</span></span>
             </div>
           </div>
 
@@ -165,7 +169,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="mb-3.5">
             <span className="text-[10px] text-gray-500 block font-semibold uppercase tracking-wider mb-0.5">Price</span>
             <p className="font-extrabold text-xl text-emerald-400 tracking-tight">
-              ₹{product.price}
+              ₹{product.price?.toLocaleString('en-IN')}
             </p>
           </div>
 
@@ -175,7 +179,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
-              // Handle your Redux / Context add-to-cart dispatch events here
             }}
             className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_4px_12px_rgba(124,58,237,0.15)] hover:shadow-[0_4px_20px_rgba(124,58,237,0.35)]"
           >

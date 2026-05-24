@@ -5,7 +5,9 @@ import { NextResponse } from "next/server"
 export const GET = async () => {
     try {
         await connectDB()
-        const product = await Product.find().populate("vendor" , "name email shopName").sort({createdAt : -1})
+        const product = await Product.find().populate("vendor" , "name email shopName").populate({
+            path: "reviews.user" , select : "name email image"
+        }).sort({createdAt : -1})
         if (!product){
             return NextResponse.json({success : false , message : "Product Not Found"} , {status : 400})
         }
