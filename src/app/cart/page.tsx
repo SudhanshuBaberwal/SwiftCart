@@ -5,11 +5,13 @@ import axios from 'axios'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { ClipLoader } from 'react-spinners'
+import { useRouter } from 'next/navigation'
 
 const CartPage = () => {
     const [cart, setCart] = useState<any[]>([])
     const [loading, setLoading] = useState<boolean>(true)
     const [actionId, setActionId] = useState<string | null>(null)
+    const router = useRouter()
 
     // Fetch live cart dataset on mount
     const getCart = async () => {
@@ -29,7 +31,6 @@ const CartPage = () => {
         getCart()
     }, [])
 
-    // Handler for updating quantity metrics via API
     const updateQuantity = async (productId: string, currentQty: number, change: number) => {
         const newQty = currentQty + change
         if (newQty < 1) return
@@ -134,7 +135,9 @@ const CartPage = () => {
 
                                         {/* Actions Footer Assembly */}
                                         <div className="mt-4 pt-1 flex flex-col sm:flex-row sm:items-center gap-3">
-                                            <button className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-5 py-2.5 rounded-lg shadow-md hover:shadow-blue-600/10 transition-all duration-200 uppercase tracking-wider w-fit">
+                                            <button
+                                                onClick={() => router.push(`/checkout/${item.product._id}`)}
+                                                className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-5 py-2.5 rounded-lg shadow-md hover:shadow-blue-600/10 transition-all duration-200 uppercase tracking-wider w-fit">
                                                 Checkout this product
                                             </button>
                                             <button
