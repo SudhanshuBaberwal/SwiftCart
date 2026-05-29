@@ -6,6 +6,8 @@ import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import Image from 'next/image'
 import { FaStripe } from 'react-icons/fa'
+import toast from 'react-hot-toast'
+import { ClipLoader } from 'react-spinners'
 
 const checkout = () => {
     const params = useParams()
@@ -18,6 +20,7 @@ const checkout = () => {
     const [address, setAddress] = useState("")
     const [city, setCity] = useState("")
     const [pincode, setPincode] = useState("")
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (!productId) {
@@ -44,6 +47,35 @@ const checkout = () => {
         }
         loadItem()
     }, [productId, router])
+
+    const handlePlaceOrder = async () => {
+        if (!name || !phone || !address || !city || !pincode) {
+            toast.error("Please fill all the address fields")
+            return;
+        }
+        setLoading(true)
+        try {
+            const payload = {
+                productId,
+                quantity: item.quantity,
+                address: { name, phone, address, city, pincode },
+                amount: finalTotal,
+                deliveryCharge,
+                serviceCharge
+            };
+            if (paymentMethod === "cod") {
+                const result = await axios.post("/api/order/cod", payload)
+                console.log(result)
+                router.push("/orders")
+            }
+        } catch (error) {
+            toast.error("Error in handlePlaceOrder")
+            console.log(error)
+        }
+        finally {
+            setLoading(false)
+        }
+    }
 
 
     if (!item) {
@@ -133,10 +165,12 @@ const checkout = () => {
                     <motion.button
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
+                        onClick={handlePlaceOrder}
+                        disabled={loading}
                         className='w-full text-white bg-linear-to-r from-blue-600 to-indigo-600 hover:opacity-90 py-4 rounded-2xl font-semibold text-lg transition'
                     >
                         {
-                            paymentMethod === "cod" ? "Place Order" : "Process To Secure Payment"
+                            loading ? <ClipLoader size={20} color='white' /> : paymentMethod === "cod" ? "Place Order" : "Process To Secure Payment"
                         }
                     </motion.button>
                 </div>
