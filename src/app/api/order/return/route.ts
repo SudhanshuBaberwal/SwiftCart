@@ -53,7 +53,7 @@ export const POST = async (req: NextRequest) => {
     }
 
     let returnAmount = 0;
-    for (const item of order.prodcuts) {
+    for (const item of order.products) {
       returnAmount += item.price * item.quantity;
     }
 
