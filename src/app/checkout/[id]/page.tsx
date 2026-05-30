@@ -65,11 +65,15 @@ const checkout = () => {
             };
             if (paymentMethod === "cod") {
                 const result = await axios.post("/api/order/cod", payload)
-                console.log(result)
-                router.push("/orders")
+                router.push("/order-success")
+            }
+            else{
+                const result = await axios.post("/api/order/online-pay" , payload)
+                window.location.href = result.data.url;
             }
         } catch (error) {
             toast.error("Error in handlePlaceOrder")
+            router.push("/order-failed")
             console.log(error)
         }
         finally {
