@@ -2,17 +2,21 @@
 
 import UseGetAllOrdersData from '@/hooks/UseGetAllOrdersData'
 import UseGetCurrentUser from '@/hooks/UseGetCurrentUser'
-import { RootState } from '@/redux/store'
+import { AppDispatch, RootState } from '@/redux/store'
+import { setAllOrdersData } from '@/redux/userSlice'
+import axios from 'axios'
 import { motion } from 'motion/react'
 import React, { useState } from 'react'
+import toast from 'react-hot-toast'
 import { FiTruck } from 'react-icons/fi'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 
 const Page = () => {
   UseGetAllOrdersData()
   UseGetCurrentUser()
 
+  const dispatch = useDispatch<AppDispatch>()
   const { userData } = useSelector((state: RootState) => state.user)
   const { allOrdersData } = useSelector((state: RootState) => state.user)
   const [trackOrderModel, setTrackOrderModel] = useState<any | null>(null)
@@ -36,28 +40,90 @@ const Page = () => {
 
   const isCencelDisabled = (order: any) => order.isPaid === true && order.paymentMethod === "stripe"
 
-  const status = ["pending", "confirmed", "shipped", "delivered", "returned"]
+  const status = ["pending", "confirmed", "shipped", "delivered"]
 
   const renderTrackStep = (currentStatus: string) => {
     return (
       <div className='relative pl-6'>
         <div className='absolute top-0 left-8 w-px h-full  bg-gray-600'> </div>
-          {status.map((s, i) => {
-            const active = currentStatus === s
-            return (
-              <div className='relative mb-6 flex items-start'>
-                <div className={`w-4 h-4 rounded-full ${active ? "bg-blue-500 shadow-lg shadow-blue-500/50" : "bg-gray-500"}`}>
+        {status.map((s, i) => {
+          const active = currentStatus === s
+          return (
+            <div key={i} className='relative mb-6 flex items-start'>
+              <div className={`w-4 h-4 rounded-full ${active ? "bg-blue-500 shadow-lg shadow-blue-500/50" : "bg-gray-500"}`}>
 
-                </div>
-                <div className='ml-4 text-sm'>{s.toUpperCase()}</div>
               </div>
-            )
-          })}
-       
+              <div className='ml-4 text-sm'>{s.toUpperCase()}</div>
+            </div>
+          )
+        })}
+
       </div>
     )
   }
 
+  const handleCencel = async (orderId: string) => {
+    try {
+      await axios.post("/api/order/cencelOrder", { orderId })
+
+      toast.success("Order Cencelled Successfully")
+
+      const updatedOrders = allOrdersData.orders.map((o: any) =>
+        o._id === orderId
+          ? { ...o, orderStatus: "cencelled" }
+          : o
+      )
+
+      dispatch(
+        setAllOrdersData({
+          ...allOrdersData,
+          orders: updatedOrders
+        })
+      )
+
+      setSelectedOrder(null) // <- ADD THIS
+    }
+    catch (error) {
+      toast.error("Failed to cencel order")
+      console.log(error)
+    }
+  }
+
+  const isEligibleReturn = (deliveryDate: string, replacementDay: number) => {
+    if (!deliveryDate || !replacementDay) return false;
+    const deliveredAt = new Date(deliveryDate).getTime()
+    const expiry = deliveredAt + replacementDay * 24 * 60 * 60 * 1000
+    return Date.now() <= expiry;
+  }
+  const remainingDays = (deliveryDate: string, replacementDay: number) => {
+    if (!deliveryDate || !replacementDay) return 0;
+    const deliveredAt = new Date(deliveryDate).getTime()
+    const expiry = deliveredAt + replacementDay * 24 * 60 * 60 * 1000;
+    const diff = expiry - Date.now()
+    if (diff <= 0) return 0;
+    return Math.ceil(diff / (24 * 60 * 60 * 1000))
+  }
+  const ReturnEndDate = (deliveryDate: string, replacementDay: number) => {
+    if (!deliveryDate || !replacementDay) return 0;
+    const deliveredAt = new Date(deliveryDate)
+    deliveredAt.setDate(deliveredAt.getDate() + replacementDay)
+    return deliveredAt;
+  }
+
+  const returnOrder = async (orderId: string) => {
+    try {
+      const result = await axios.post("/api/order/return", { orderId })
+      const updatedOrders = allOrdersData.orders.map((o: any) =>
+        o._id === orderId
+          ? { ...o, orderStatus: "returned", returnAmount: result.data }
+          : o
+      )
+      toast.success("Order returned")
+    } catch (error) {
+      console.log(error)
+      toast.error("Order return failed")
+    }
+  }
 
   if (!userData || !allOrdersData) {
     return (
@@ -142,19 +208,24 @@ const Page = () => {
                     </div>
                   ))}
                 </div>
-
+                {order.orderStatus === "cencelled" && (
+                  <span className='text-red-500 font-semibold'>Cencelled</span>
+                )}
                 {/* Bottom Control Actions Layer */}
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  <button onClick={() => setSelectedOrder(order)} className="w-full py-3 px-4 bg-white/6 hover:bg-white/12 border border-white/4 rounded-lg text-xs font-semibold text-gray-200 transition-all text-center">
+                {order.orderStatus !== "cencelled" && order.orderStatus === "returned" && <div className="grid grid-cols-2 gap-3 mt-4">
+                  <button onClick={() => setSelectedOrder(order)}
+                    className="w-full py-3 px-4 bg-white/6 hover:bg-white/12 border border-white/4 rounded-lg text-xs font-semibold text-gray-200 transition-all text-center">
                     Check Details
                   </button>
                   <button
+                    disabled={order.orderStatus === "delivered"}
                     onClick={() => setTrackOrderModel(order)}
-                    className="w-full py-3 px-4 bg-white/6 hover:bg-white/12 border border-white/4 rounded-lg text-xs font-semibold text-gray-200 transition-all flex items-center justify-center gap-2">
-                    <FiTruck className="text-gray-400" />
-                    <span>Track Order</span>
+                    className={`px-3 py-1 rounded flex items-center gap-2 transition ${order.orderStatus === "delivered" ?
+                      "bg-green-500/20 text-green-400 cursor-not-allowed" : "bg-white/10 hover:bg-white/20"
+                      }`}>
+                    <FiTruck /> {order.orderStatus === "delivered" ? "Delivered" : "Track Order"}
                   </button>
-                </div>
+                </div>}
               </div>
             ))
           ) : (
@@ -212,18 +283,48 @@ const Page = () => {
                       ₹{order.totalAmount}
                     </td>
                     <td className='px-5 py-4 text-sm'>
-                      <div className='flex gap-2 justify-center items-center'>
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className='px-3 py-1.5 bg-white/5 border border-white/5 text-xs font-medium rounded hover:bg-white/10 transition-colors'>
-                          Check Details
-                        </button>
-                        <button
-                          onClick={() => setTrackOrderModel(order)}
-                          className='px-3 py-1.5 bg-white/5 border border-white/5 text-xs font-medium rounded hover:bg-white/10 transition-colors flex items-center justify-center gap-1.5'>
-                          <FiTruck className="text-gray-400" /> <span>Track Order</span>
-                        </button>
-                      </div>
+                      {
+                        order.orderStatus === "cencelled"
+                          ? (
+                            <div className='flex justify-center'>
+                              <span className='px-3 py-1 rounded-full
+                          bg-red-500/15 text-red-400
+                          text-xs font-bold uppercase tracking-wider'>
+                                Cancelled
+                              </span>
+                            </div>
+                          )
+                          : (
+                            <div className='flex gap-2 justify-center items-center'>
+
+                              <button
+                                onClick={() => setSelectedOrder(order)}
+                                className='px-3 py-1.5 bg-white/5 border border-white/5
+          text-xs font-medium rounded hover:bg-white/10 transition-colors'
+                              >
+                                Check Details
+                              </button>
+
+                              <button
+                                disabled={order.orderStatus === "delivered"}
+                                onClick={() => setTrackOrderModel(order)}
+                                className={`px-3 py-1 rounded flex items-center gap-2 transition
+                                ${order.orderStatus === "delivered"
+                                    ? "bg-green-500/20 text-green-400 cursor-not-allowed"
+                                    : "bg-white/10 hover:bg-white/20"
+                                  }`}
+                              >
+                                <FiTruck />
+                                {
+                                  order.orderStatus === "delivered"
+                                    ? "Delivered"
+                                    : "Track Order"
+                                }
+                              </button>
+
+                            </div>
+                          )
+                      }
                     </td>
                   </tr>
                 ))
@@ -292,6 +393,15 @@ const Page = () => {
               </div>
 
               {
+                selectdOrder.orderStatus === "delivered" && selectdOrder.deliveryDate && (
+                  <div className='mt-3 text-sm text-green-400'>
+                    Delivered On : {" "}
+                    {new Date(selectdOrder.deliveryDate).toLocaleDateString("en-IN")}
+                  </div>
+                )
+              }
+
+              {
                 selectdOrder.isPaid === true && selectdOrder.paymentMethod === "stripe" &&
                 <div className='bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-xs rounded-lg p-3 mt-4'>
                   <p className='font-semibold mb-1'>Important Note</p>
@@ -315,16 +425,69 @@ const Page = () => {
                   Cencel
                 </button>
                 <button
+                  disabled={selectdOrder.orderStatus === "delivered"}
                   onClick={() => setTrackOrderModel(selectdOrder)}
-                  className='px-4 py-2 rounded flex items-center gap-2 transition bg-blue-500 hover:bg-blue-700'
+                  className={`px-3 py-1 rounded flex items-center gap-2 transition
+                                ${selectdOrder.orderStatus === "delivered"
+                      ? "bg-green-500/20 text-green-400 cursor-not-allowed"
+                      : "bg-white/10 hover:bg-white/20"
+                    }`}
                 >
-                  <FiTruck /> Track Order
+                  <FiTruck />
+                  {
+                    selectdOrder.orderStatus === "delivered"
+                      ? "Delivered"
+                      : "Track Order"
+                  }
                 </button>
-                <button
-                  className={`px-4 py-2 rounded ${isCencelDisabled(selectdOrder) ? "bg-white/10 text-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-800"}`}
-                >
-                  Cencel Order
-                </button>
+                {
+                  selectdOrder.orderStatus !== "delivered" ? (<button
+                    onClick={() => handleCencel(selectdOrder._id)}
+                    className={`px-4 py-2 rounded ${isCencelDisabled(selectdOrder) ? "bg-white/10 text-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-800"}`}
+                  >
+                    Cencel Order
+                  </button>) : (
+                    selectdOrder.products.map((p: any, i: number) => {
+                      console.log(p)
+                      const repalcementDays = p.product.replacementDay || 0
+                      const eligible = isEligibleReturn(selectdOrder.deliveryDate, repalcementDays)
+                      const remaining = remainingDays(selectdOrder.deliveryDate, repalcementDays)
+                      const returnEndDate = ReturnEndDate(selectdOrder.deliveryDate, repalcementDays)
+                      console.log(repalcementDays)
+                      return (
+                        <div key={i} className='flex justify-between items-center bg-white/5 px-3 py-2 rounded ml-2'>
+                          <div>
+                            <p className='text-xs text-gray-300'>
+                              {p.product?.title}
+                            </p>
+                            {
+                              eligible ? (
+                                <>
+                                  <p className='text-xs text-yellow-400'>
+                                    Return available for {remaining} days {remaining > 1 ? "s" : ""}
+                                  </p>
+                                  {
+                                    returnEndDate && (
+                                      <p className='text-[11px] text-gray-400'>
+                                        Return till : {" "}
+                                        {returnEndDate.toLocaleDateString("en-IN")}
+                                      </p>
+                                    )
+                                  }
+                                </>
+                              ) : (<p className='text-xs text-red-400'>Return Window Closed</p>)
+                            }
+                          </div>
+                          {
+                            eligible && (
+                              <button onClick={() => returnOrder(selectdOrder._id)} className='mx-3 px-3 py-1 bg-yellow-600 rounded text-sm'>Return</button>
+                            )
+                          }
+                        </div>
+                      )
+                    })
+                  )
+                }
               </div>
 
             </motion.div>
@@ -367,8 +530,8 @@ const Page = () => {
               </div>
               {renderTrackStep(trackOrderModel.orderStatus)}
               <button
-              onClick={() => setTrackOrderModel(null)}
-              className='px-4 py-2 bg-white/10 rounded'
+                onClick={() => setTrackOrderModel(null)}
+                className='px-4 py-2 bg-white/10 rounded'
               >
                 Cencel
               </button>

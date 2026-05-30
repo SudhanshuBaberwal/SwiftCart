@@ -20,7 +20,7 @@ export const GET = async (req: NextRequest) => {
       .populate({
         path: "products.product",
         model: "Product",
-        select: "title image1 price category stock vendor replacementDays",
+        select: "title image1 price category stock vendor replacementDay",
       })
       .sort({ createdAt: -1 });
 

@@ -82,7 +82,7 @@ export const POST = async (req: NextRequest) => {
       vendor: session.user.id,
       isWearable,
       sizes: isWearable ? sizes : [],
-      replacementDays,
+      replacementDay : replacementDays,
       warranty,
       payOnDelivery,
       freeDelivery,
