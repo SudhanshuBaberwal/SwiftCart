@@ -69,8 +69,8 @@ export const GET = async (req: NextRequest) => {
     // 4. Query the database natively
     const products = await Product.find(filter).populate(
       "vendor",
-      "shopName email"
-    );
+      "shopName image"
+    ).sort({createdAt : -1});
 
     return NextResponse.json(
       {

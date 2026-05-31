@@ -3,6 +3,7 @@ import React from 'react'
 import Slider from './Slider'
 import CategorySlider from './CategorySlider'
 import ProductCardPage from './ProductCardPage'
+import ShopPage from '@/app/shop/page'
 
 const UserDashBoard = () => {
   return (
@@ -14,6 +15,7 @@ const UserDashBoard = () => {
         <Slider />
         <CategorySlider />
         <ProductCardPage/>
+        <ShopPage />
       </section>
       
     </div>
