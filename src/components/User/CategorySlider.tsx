@@ -2,31 +2,33 @@
 import React, { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { LuChevronLeft, LuChevronRight } from 'react-icons/lu'
+import { useRouter } from 'next/navigation'
 
 const CategorySlider = () => {
     const categories = [
         { label: "Fashion & Lifestyle", icon: "👕", color: "from-blue-500/10 to-purple-500/10" },
-        { label: "Electronics", icon: "💻", color: "from-cyan-500/10 to-blue-500/10" },
-        { label: "Mobiles & Accessories", icon: "📱", color: "from-indigo-500/10 to-cyan-500/10" },
-        { label: "Home & Kitchen", icon: "🏠", color: "from-orange-500/10 to-red-500/10" },
+        { label: "Electronics & Gadgets", icon: "💻", color: "from-cyan-500/10 to-blue-500/10" },
+        // { label: "Mobiles & Accessories", icon: "📱", color: "from-indigo-500/10 to-cyan-500/10" },
+        { label: "Home & Living", icon: "🏠", color: "from-orange-500/10 to-red-500/10" },
         { label: "Beauty & Personal Care", icon: "💄", color: "from-pink-500/10 to-rose-500/10" },
         { label: "Sports & Fitness", icon: "🏋️‍♂️", color: "from-green-500/10 to-emerald-500/10" },
         { label: "Books & Stationery", icon: "📚", color: "from-yellow-500/10 to-orange-500/10" },
-        { label: "Toys & Baby", icon: "🧸", color: "from-purple-500/10 to-pink-500/10" },
-        { label: "Groceries", icon: "🛒", color: "from-emerald-500/10 to-teal-500/10" },
-        { label: "Footwear", icon: "👟", color: "from-blue-500/10 to-indigo-500/10" },
-        { label: "Jewelry", icon: "💍", color: "from-amber-500/10 to-yellow-500/10" },
-        { label: "Furniture", icon: "🛋️", color: "from-stone-500/10 to-gray-500/10" },
-        { label: "Automotive", icon: "🚗", color: "from-red-500/10 to-orange-500/10" },
-        { label: "Gaming", icon: "🎮", color: "from-violet-500/10 to-purple-500/10" },
-        { label: "Health", icon: "💊", color: "from-teal-500/10 to-cyan-500/10" },
-        { label: "Pet Supplies", icon: "🐶", color: "from-amber-500/10 to-orange-500/10" },
-        { label: "Office", icon: "📦", color: "from-gray-500/10 to-slate-500/10" },
+        { label: "Toys, Kids & Baby", icon: "🧸", color: "from-purple-500/10 to-pink-500/10" },
+        { label: "Food & Grocery", icon: "🛒", color: "from-emerald-500/10 to-teal-500/10" },
+        // { label: "Footwear", icon: "👟", color: "from-blue-500/10 to-indigo-500/10" },
+        // { label: "Jewelry", icon: "💍", color: "from-amber-500/10 to-yellow-500/10" },
+        // { label: "Furniture", icon: "🛋️", color: "from-stone-500/10 to-gray-500/10" },
+        { label: "Automotive Accessories", icon: "🚗", color: "from-red-500/10 to-orange-500/10" },
+        // { label: "Gaming", icon: "🎮", color: "from-violet-500/10 to-purple-500/10" },
+        // { label: "Health", icon: "💊", color: "from-teal-500/10 to-cyan-500/10" },
+        // { label: "Pet Supplies", icon: "🐶", color: "from-amber-500/10 to-orange-500/10" },
+        { label: "Gifts & Handcrafts", icon: "📦", color: "from-gray-500/10 to-slate-500/10" },
     ]
 
     const [startIndex, setStartIndex] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
     const itemsPerPage = 5
+    const router = useRouter()
 
     useEffect(() => {
         if (isHovered) return;
@@ -98,6 +100,9 @@ const CategorySlider = () => {
                     >
                         {categories.slice(startIndex, startIndex + itemsPerPage).map((item, index) => (
                             <motion.div
+                                onClick={() => router.push(
+                                    `/categories?category=${encodeURIComponent(item.label)}`
+                                )}
                                 key={`${startIndex}-${index}`}
                                 whileHover={{ y: -6, scale: 1.02 }}
                                 whileTap={{ scale: 0.96 }}

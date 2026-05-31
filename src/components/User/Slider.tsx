@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import { LuArrowRight } from 'react-icons/lu'
+import { useRouter } from 'next/navigation'
 
 const Slider = () => {
   const [current, setCurrent] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
+  const router = useRouter()
 
   const slides = [
     {
@@ -130,6 +132,7 @@ const Slider = () => {
             </motion.p>
 
             <motion.button
+            onClick={() => router.push("/categories")}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.5 }}
