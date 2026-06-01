@@ -94,7 +94,7 @@ export const POST = async (req: NextRequest) => {
     const p = await User.findByIdAndUpdate(
       session.user.id,
       {
-        $push: { VendorProduct: product._id },
+        $push: { vendorProducts: product._id },
       },
       { new: true },
     );

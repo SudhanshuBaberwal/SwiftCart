@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
-    const vendors = await User.find({ role: "vendor" }).sort({ createdAt: -1 });
+    const vendors = await User.find({ role: "vendor" }).sort({ createdAt: -1 }).populate("vendorProducts")
     if (!vendors) {
       return NextResponse.json(
         { success: false, message: "Vendors Not Found" },
