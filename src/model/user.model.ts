@@ -27,6 +27,15 @@ export interface IUser {
     quantity: number;
   }[];
 
+  chats?: {
+    with: mongoose.Types.ObjectId; // is user ke saath chat
+    messages: {
+      sender: mongoose.Types.ObjectId;
+      text: string;
+      createdAt: Date;
+    }[];
+  };
+
   creadtedAt?: Date;
   updatedAt?: Date;
 }
@@ -106,6 +115,32 @@ const userSceham = new mongoose.Schema<IUser>(
           type: Number,
           default: 1,
         },
+      },
+    ],
+    chats: [
+      {
+        with: {
+          type: mongoose.Schema.Types.ObjectId,
+          red: "User",
+          required: true,
+        },
+        messages: [
+          {
+            sender: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "User",
+              required: true,
+            },
+            text: {
+              type: String,
+              required: true,
+            },
+            createdAt: {
+              type: Date,
+              default: Date.now(),
+            },
+          },
+        ],
       },
     ],
   },
