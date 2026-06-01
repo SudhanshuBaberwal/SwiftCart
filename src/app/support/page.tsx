@@ -14,8 +14,10 @@ import {
   LuMessageSquare,
   LuClock,
   LuChevronLeft,
-  LuLayers
+  LuLayers,
+  LuX
 } from 'react-icons/lu'
+import { ClipLoader } from 'react-spinners'
 
 interface Messages {
   sender: string
@@ -35,6 +37,9 @@ const SupportChats = () => {
   // Controls fluid layout viewport splitting on small screen sizes
   const [showChatPane, setShowChatPane] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [loadingSuggestions, setLoadingSuggesstions] = useState(false)
 
   // Autoscroll conversation history view container smoothly on message intake updates
   useEffect(() => {
@@ -60,6 +65,7 @@ const SupportChats = () => {
       try {
         const result = await axios.post("/api/support/get", { withUserId: activeUser._id })
         setMessages(result.data.messages || [])
+        setSuggestions([]) // Clear previous suggestions when swapping chats
       } catch (error) {
         console.error(error)
       }
@@ -71,6 +77,7 @@ const SupportChats = () => {
     if (!text.trim() || !activeUser) return
     const messageContent = text.trim()
     setText("") // Instant optimistic input wiping update
+    setSuggestions([]) // Clear options after message is dispatched
 
     try {
       await axios.post("/api/support/send", {
@@ -82,6 +89,32 @@ const SupportChats = () => {
       toast.error("Failed to deliver message")
       setText(messageContent) // Rollback string value state on catastrophic connection dropouts
       console.error(error)
+    }
+  }
+
+  const getSuggestions = async () => {
+    if (!messages.length || !activeUser || !userData?.role) {
+      toast.error("Send or receive a message first to get contextual hints")
+      return
+    }
+    const lastMessages = messages[messages.length - 1]
+    setLoadingSuggesstions(true)
+    try {
+      const result = await axios.post("/api/support/AI", {
+        message: lastMessages.text,
+        role: userData.role,
+        targetRole: activeUser.role
+      })
+      if (result.data.suggestions && result.data.suggestions.length > 0) {
+        setSuggestions(result.data.suggestions)
+      } else {
+        toast.error("AI couldn't generate safe options for this context")
+      }
+    } catch (error) {
+      console.error("error : ", error)
+      toast.error("Could not load AI reply choices")
+    } finally {
+      setLoadingSuggesstions(false)
     }
   }
 
@@ -133,10 +166,10 @@ const SupportChats = () => {
               users.map((u, i) => (
                 <div
                   onClick={() => handleSelectUser(u)}
-                  key={i}
+                  key={u._id || i}
                   className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 relative ${activeUser?._id === u._id
-                      ? "bg-blue-500/10 border border-blue-500/30 shadow-md text-white"
-                      : "hover:bg-zinc-900/40 border border-transparent text-zinc-400 hover:text-zinc-200"
+                    ? "bg-blue-500/10 border border-blue-500/30 shadow-md text-white"
+                    : "hover:bg-zinc-900/40 border border-transparent text-zinc-400 hover:text-zinc-200"
                     }`}
                 >
                   <div className='w-10 h-10 rounded-full overflow-hidden border border-zinc-800 flex items-center justify-center shrink-0 bg-zinc-900 relative shadow-inner'>
@@ -199,8 +232,8 @@ const SupportChats = () => {
                   return (
                     <div key={i} className={`flex items-end gap-2.5 ${isMe ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[75%] sm:max-w-[65%] px-3.5 py-2.5 text-xs font-medium leading-relaxed rounded-xl shadow-xs ${isMe
-                          ? "bg-blue-600 text-white rounded-br-none font-semibold"
-                          : "bg-zinc-900/90 text-zinc-200 border border-zinc-800/40 rounded-bl-none"
+                        ? "bg-blue-600 text-white rounded-br-none font-semibold"
+                        : "bg-zinc-900/90 text-zinc-200 border border-zinc-800/40 rounded-bl-none"
                         }`}>
                         <p className="whitespace-pre-wrap break-words">{msg.text}</p>
                       </div>
@@ -210,11 +243,53 @@ const SupportChats = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* AI Utility Actions Panel Tray */}
-              <div className='px-4 pb-2 pt-1 bg-transparent'>
-                <button className='inline-flex items-center gap-1.5 text-[10px] tracking-wide font-extrabold uppercase px-3 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/15 text-purple-400 border border-purple-500/20 active:scale-98 transition-all shadow-sm'>
-                  <LuSparkles size={11} className="stroke-[2.5]" />
-                  <span>Get AI Suggestions</span>
+              {/* --- DYNAMIC AI SUGGESTIONS WRAPPER PANEL --- */}
+              <div className='px-4 pt-2 pb-1 space-y-2 bg-transparent border-t border-zinc-900/40'>
+                {/* Horizontal Sliding List of Suggestions */}
+                {suggestions.length > 0 && (
+                  <div className="flex flex-col gap-1.5 pb-1">
+                    <div className="flex justify-between items-center px-0.5">
+                      <span className="text-[9px] uppercase tracking-wider font-bold text-purple-400/80 flex items-center gap-1">
+                        <LuSparkles size={10} /> Smart Recommendations
+                      </span>
+                      <button
+                        onClick={() => setSuggestions([])}
+                        className="text-zinc-600 hover:text-zinc-400 transition-colors"
+                      >
+                        <LuX size={12} />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 pr-4 scroll-smooth">
+                      {suggestions.map((suggestion, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setText(suggestion)}
+                          className="whitespace-nowrap bg-purple-500/5 hover:bg-purple-500/15 border border-purple-500/20 text-purple-300 text-[11px] px-3 py-1.5 rounded-xl font-medium transition-all duration-200 active:scale-95 text-left truncate max-w-[260px]"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Suggestions Control Trigger Button */}
+                <button
+                  onClick={getSuggestions}
+                  disabled={loadingSuggestions}
+                  className='inline-flex items-center gap-1.5 text-[10px] tracking-wide font-extrabold uppercase px-3 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/15 text-purple-400 border border-purple-500/20 active:scale-98 transition-all shadow-sm disabled:opacity-50'
+                >
+                  {loadingSuggestions ? (
+                    <>
+                      <ClipLoader size={10} color="#c084fc" />
+                      <span>Analyzing Context...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LuSparkles size={11} className="stroke-[2.5]" />
+                      <span>Get AI Suggestions</span>
+                    </>
+                  )}
                 </button>
               </div>
 
