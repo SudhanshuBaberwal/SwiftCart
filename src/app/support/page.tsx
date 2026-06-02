@@ -166,7 +166,7 @@ const SupportChats = () => {
               users.map((u, i) => (
                 <div
                   onClick={() => handleSelectUser(u)}
-                  key={u._id || i}
+                  key={i}
                   className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 relative ${activeUser?._id === u._id
                     ? "bg-blue-500/10 border border-blue-500/30 shadow-md text-white"
                     : "hover:bg-zinc-900/40 border border-transparent text-zinc-400 hover:text-zinc-200"
