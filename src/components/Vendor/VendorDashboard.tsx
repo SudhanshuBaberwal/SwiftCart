@@ -1,124 +1,157 @@
 'use client'
-import React, { useState } from 'react'
-import { FaBox, FaCheckCircle, FaShoppingBag, FaStore, FaChartLine, FaBoxOpen } from 'react-icons/fa'
-import { MdDashboard, MdOutlineInsights } from 'react-icons/md'
-import { LuBell, LuSearch, LuMoveHorizontal } from 'react-icons/lu'
+import React from 'react'
+import { FaShoppingBag, FaBoxOpen } from 'react-icons/fa'
+import { MdDashboard } from 'react-icons/md'
 import { AnimatePresence, motion } from 'motion/react'
-import type { Variants } from "motion/react"
-import { AiOutlineClose, AiOutlineMenu } from 'react-icons/ai'
-import { ifError } from 'assert'
+import { useRouter, useSearchParams } from 'next/navigation'
 import VendorProduct from './VendorProduct'
 import VendorOrders from './VendorOrders'
 import Dashboard from './Dashboard'
+import Navbar from '../Navbar'
+
 
 const VendorDashboard = () => {
-  const [activePage, setActivePage] = useState("dashboard")
-  const [openMenu, setOpenMenu] = useState(false)
+  const searchParams = useSearchParams()
+  const router = useRouter()
   
+  // URL tab read karein ya default par backup "dashboard" rakhein
+  const currentTab = searchParams.get("tab") || "dashboard"
+  
+  // const mockUser = {
+  //   role: 'vendor',
+  //   name: 'Ahmad',
+  //   email: 'vendor@swiftcart.com'
+  // }
+
   const renderPage = () => {
-    switch (activePage) {
+    switch (currentTab) {
       case "dashboard": return <Dashboard />;
-      case "product": return <VendorProduct />;
+      case "products": return <VendorProduct />;
       case "orders": return <VendorOrders />;
+      default: return <Dashboard />;
     }
   }
 
   const menu = [
-    { id: "dashboard", label: "Overview", icon: <MdDashboard size={20} /> },
-    { id: "product", label: "Product", icon: <FaBoxOpen size={20} /> },
-    { id: "orders", label: "Orders", icon: <FaShoppingBag size={20} /> },
+    { id: "dashboard", label: "Overview", icon: <MdDashboard size={18} /> },
+    { id: "products", label: "Product", icon: <FaBoxOpen size={18} /> },
+    { id: "orders", label: "Orders", icon: <FaShoppingBag size={18} /> },
   ]
 
   return (
-    <div className='w-full flex min-h-screen bg-linear-to-r from-gray-900 to-gray-900 text-white'>
+    <div className='w-full flex min-h-screen bg-[#0a0a0c] text-white overflow-hidden relative'>
       
-      {/* Mobile Tab bar - Pushed down to top-[80px] to sit below the global Navbar */}
-      <div className='lg:hidden fixed top-[80px] left-0 w-full bg-black px-6 py-3 flex justify-between items-center border-b border-gray-700 z-40'>
-        <h1 className='text-xl font-bold'>Vendor Panel</h1>
-        {!openMenu && <button onClick={() => setOpenMenu(true)}><AiOutlineMenu size={25} /></button>}
-      </div>
-
-      {/* sidebar for large - Added pt-[100px] so the top items aren't hidden behind the floating Navbar */}
+      {/* 1. Global Floating Navbar - States are linked directly via route queries */}
+      {/* <Navbar user={mockUser} /> */}
+      
+      {/* 2. Desktop Sidebar Layout */}
       <motion.div
         initial={{ x: -40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className='hidden lg:block w-72 bg-gray-800/40 border-r border-gray-700 p-6 pt-[100px] backdrop-blur-xl'
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className='hidden lg:block w-72 bg-[#0e0e12] border-r border-white/5 p-6 pt-[110px] backdrop-blur-2xl shrink-0'
       >
-        <h1 className='text-xl font-bold mb-6'>Vendor Panel</h1>
-        <div className='flex flex-col gap-3'>
-          {
-            menu.map((item) => (
+        <div className="mb-6 px-2">
+            <h1 className='text-md font-bold tracking-wide text-zinc-400 text-xs uppercase'>Merchant Terminal</h1>
+            <p className='text-lg font-extrabold text-white mt-0.5'>Vendor Panel</p>
+        </div>
+        
+        <div className='flex flex-col gap-1.5 relative'>
+          {menu.map((item) => {
+            const isActive = currentTab === item.id;
+            return (
               <button
                 key={item.id}
-                onClick={() => setActivePage(item.id)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm
-                  ${activePage === item.id ?
-                    "bg-blue-600 text-white"
-                    :
-                    "bg-gray-800 hover:bg-gray-700"
-                  }
-                  `}
+                onClick={() => router.push(`/?tab=${item.id}`)}
+                className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-300 text-xs font-semibold tracking-wide outline-none group z-10
+                  ${isActive ? "text-white" : "text-zinc-400 hover:text-white"}`}
               >
-                {item.icon}{item.label}
+                {/* Active Sliding Magic Pill Effect */}
+                {isActive && (
+                  <motion.div
+                    layoutId="active-sidebar-pill"
+                    className="absolute inset-0 bg-white/10 border border-white/10 rounded-xl shadow-inner -z-10"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <span className={`transition-transform duration-300 ${isActive ? "scale-110 text-violet-400" : "group-hover:scale-105"}`}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
               </button>
-            ))
-          }
+            )
+          })}
         </div>
       </motion.div>
 
-      <AnimatePresence>
-        {openMenu && (
-          <motion.div
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            transition={{ duration: 0.3 }}
-            /* Increased z-index to 70 so the mobile drawer safely covers everything, including the global Navbar */
-            className='lg:hidden fixed top-0 left-0 w-72 h-full bg-gray-800/90 backdrop-blur-xl p-6 z-[70] border-r border-gray-700'
-          >
-            <div className='flex justify-between items-center mb-6'>
-              <h1 className='text-xl font-bold'>Vendor Panel</h1>
-              <button onClick={() => setOpenMenu(false)}>
-                <AiOutlineClose size={26} />
-              </button>
-            </div>
-            <div className='flex flex-col gap-3'>
-              {
-                menu.map((item , index) => (
-                  <button
-                  key={index}
-                    onClick={() => { setOpenMenu(false); setActivePage(item.id) }}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm
-                    ${activePage == item.id ?
-                        "bg-blue-600 text-white"
-                        :
-                        "bg-black/20 hover:bg-gray-700"
-                      }
-                    `}
-                  >
-                    {item.icon}{item.label}
-                  </button>
-                ))
-              }
-            </div>
-
-          </motion.div>)}
-      </AnimatePresence>
-
-      {/* Main Area - Changed margins/padding to mt-[140px] for mobile and pt-[100px] for desktop to clear headers */}
-      <motion.div
-        initial={{ opacity: 0, x: 40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.4 }}
-        className='flex-1 p-6 sm:p-10 mt-[140px] lg:mt-0 lg:pt-[100px]'
-      >
-        {renderPage()}
-      </motion.div>
+      {/* 3. Main Display Canvas with Motion Animate Presence */}
+      <div className='flex-1 p-4 sm:p-8 lg:p-10 pt-[110px] lg:pt-[110px] overflow-y-auto'>
+        <div className="max-w-6xl mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentTab}
+              initial={{ opacity: 0, y: 15, filter: "blur(4px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {renderPage()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
 
     </div>
   )
 }
+
+// export default VendorDashboard
+
+// export default VendorDashboard
+//   )
+// }
+
+// export default VendorDashboard
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //   return (

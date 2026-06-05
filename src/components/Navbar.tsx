@@ -1,7 +1,6 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
-import Image from 'next/image'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
 import { signOut } from 'next-auth/react'
 import {
@@ -18,32 +17,31 @@ import {
     AiOutlineLogout,
 } from 'react-icons/ai'
 import { GoListUnordered } from 'react-icons/go'
+import { LuLayoutDashboard, LuPackage, LuShieldAlert, LuUsers, LuSquare } from 'react-icons/lu'
+import { IUser } from '@/model/user.model'
 
-interface IUser { role: string; image?: string; name?: string; email?: string }
-import logo from "@/assets/logo.png"
-
-// --- Helper Types ---
 interface NavProps { user?: IUser | null }
-interface NavItemProps { label: string; path: string; router: any; isActive: boolean }
-interface IconBtnProps { Icon: React.ElementType; onClick: () => void; badgeCount?: number; highlight?: boolean; className?: string }
+interface NavItemProps { label: string; id: string; currentActive: boolean; onClick: () => void }
+interface IconBtnProps { Icon: React.ElementType; onClick: () => void; badgeCount?: number; className?: string }
 
 const Navbar = ({ user }: NavProps) => {
     const [openMenu, setOpenMenu] = useState<boolean>(false)
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false)
     const [scrolled, setScrolled] = useState(false)
-    
+
     const router = useRouter()
     const pathname = usePathname()
+    const searchParams = useSearchParams()
     const dropdownRef = useRef<HTMLDivElement>(null)
 
-    // Handle scroll effect for the floating navbar
+    const currentTab = searchParams.get("tab") || "dashboard"
+
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20)
         window.addEventListener("scroll", handleScroll)
         return () => window.removeEventListener("scroll", handleScroll)
     }, [])
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -55,70 +53,93 @@ const Navbar = ({ user }: NavProps) => {
     }, [])
 
     const isConsumerView = !user || user.role === 'user'
+    const isAdminView = user?.role === 'admin'
+    const isVendorView = user?.role === 'vendor'
 
     return (
-        // Wrapper creates the floating effect
         <div className='fixed top-0 left-0 w-full z-50 px-3 sm:px-6 pt-4 transition-all duration-300 pointer-events-none'>
-            
-            <motion.div 
+            <motion.div
                 animate={{
                     y: scrolled ? 0 : 5,
-                    boxShadow: scrolled ? "0 20px 40px -15px rgba(0,0,0,0.5)" : "none"
+                    boxShadow: scrolled ? "0 20px 40px -15px rgba(0,0,0,0.7)" : "none"
                 }}
                 className={`max-w-7xl mx-auto rounded-full pointer-events-auto transition-colors duration-500
-                    ${scrolled ? "bg-[#0a0a0c]/80 border border-white/5 backdrop-blur-2xl" : "bg-transparent border border-transparent"}`}
+                    ${scrolled ? "bg-[#0a0a0c]/85 border border-white/10 backdrop-blur-2xl" : "bg-transparent border border-transparent"}`}
             >
-                <div className='px-4 sm:px-6 py-3 flex justify-between items-center relative'>
-                    
-                    {/* --- Logo --- */}
-                    <div onClick={() => router.push("/")} className='flex shrink-0 items-center gap-3 cursor-pointer group z-10'>
-                        <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-linear-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_25px_rgba(217,70,239,0.5)] transition-all duration-300">
-                            <span className="font-bold text-base sm:text-lg text-white">S</span>
+                <div className='px-4 sm:px-6 py-2.5 flex justify-between items-center relative gap-4'>
+
+                    {/* --- Brand Layout --- */}
+                    <div onClick={() => router.push("/")} className='flex shrink-0 items-center gap-2.5 cursor-pointer group z-10'>
+                        <div className="relative w-9 h-9 rounded-xl bg-linear-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_25px_rgba(217,70,239,0.5)] transition-all duration-300">
+                            <span className="font-bold text-base text-white">S</span>
                         </div>
-                        <span className='text-lg sm:text-xl font-bold tracking-wide hidden sm:inline bg-clip-text text-transparent bg-linear-to-r from-white to-gray-400'>
+                        <span className='text-base sm:text-lg font-bold tracking-wide bg-clip-text text-transparent bg-linear-to-r from-white to-gray-400 hidden sm:inline-block'>
                             SwiftCart
                         </span>
+                        {!isConsumerView && (
+                            <span className={`text-[9px] border px-1.5 py-0.5 rounded-md font-bold uppercase tracking-widest hidden md:inline-block
+                                ${isAdminView ? "text-red-400 bg-red-500/10 border-red-500/20" : "text-blue-400 bg-blue-500/10 border-blue-500/20"}`}>
+                                {user?.role}
+                            </span>
+                        )}
                     </div>
 
-                    {/* --- Desktop Center Links (Hidden on mobile/tablet to prevent overlap) --- */}
+                    {/* --- Center Navigation Links (Consumer View) --- */}
                     {isConsumerView && (
-                        <div className='hidden lg:flex items-center absolute left-1/2 -translate-x-1/2 bg-white/2 border border-white/3 rounded-full p-1.5 backdrop-blur-md'>
-                            <NavItem label="Home" path="/" router={router} isActive={pathname === "/"} />
-                            <NavItem label="Categories" path="/categories" router={router} isActive={pathname === "/categories"} />
-                            <NavItem label="Shop" path="/shop" router={router} isActive={pathname === "/shop"} />
-                            <NavItem label="Orders" path="/orders" router={router} isActive={pathname === "/orders"} />
+                        <div className='hidden lg:flex items-center absolute left-1/2 -translate-x-1/2 bg-white/5 border border-white/5 rounded-full p-1 backdrop-blur-md gap-0.5'>
+                            <GlobalNavItem label="Home" id="home" currentActive={pathname === "/"} onClick={() => router.push("/")} />
+                            <GlobalNavItem label="Categories" id="categories" currentActive={pathname === "/categories"} onClick={() => router.push("/categories")} />
+                            <GlobalNavItem label="Shop" id="shop" currentActive={pathname === "/shop"} onClick={() => router.push("/shop")} />
+                            <GlobalNavItem label="Orders" id="orders" currentActive={pathname === "/orders"} onClick={() => router.push("/orders")} />
+                        </div>
+                    )}
+
+                    {/* --- Center Navigation Links (Vendor View) --- */}
+                    {isVendorView && (
+                        <div className='hidden lg:flex items-center absolute left-1/2 -translate-x-1/2 bg-white/5 border border-white/5 rounded-full p-1 backdrop-blur-md gap-0.5'>
+                            <GlobalNavItem label="Overview" id="dashboard" currentActive={currentTab === "dashboard"} onClick={() => router.push("/?tab=dashboard")} />
+                            <GlobalNavItem label="Products" id="products" currentActive={currentTab === "products"} onClick={() => router.push("/?tab=products")} />
+                            <GlobalNavItem label="Orders" id="orders" currentActive={currentTab === "orders"} onClick={() => router.push("/?tab=orders")} />
+                        </div>
+                    )}
+
+                    {/* --- Center Navigation Links (Admin View - Responsive Safe Horizontal bar) --- */}
+                    {isAdminView && (
+                        <div className='hidden lg:flex items-center absolute left-1/2 -translate-x-1/2 bg-white/5 border border-white/5 rounded-full p-1 backdrop-blur-md gap-0.5 max-w-[50%] overflow-x-auto no-scrollbar'>
+                            <GlobalNavItem label="Overview" id="dashboard" currentActive={currentTab === "dashboard"} onClick={() => router.push("/?tab=dashboard")} />
+                            <GlobalNavItem label="Vendor Details" id="vendordetails" currentActive={currentTab === "vendordetails"} onClick={() => router.push("/?tab=vendordetails")} />
+                            <GlobalNavItem label="User Orders" id="userorders" currentActive={currentTab === "userorders"} onClick={() => router.push("/?tab=userorders")} />
+                            <GlobalNavItem label="Approvals" id="approvals" currentActive={currentTab === "approvals"} onClick={() => router.push("/?tab=approvals")} />
+                            <GlobalNavItem label="Product Approvals" id="productapprovals" currentActive={currentTab === "productapprovals"} onClick={() => router.push("/?tab=productapprovals")} />
                         </div>
                     )}
 
                     {/* --- Right Actions Area --- */}
-                    <div className='flex items-center gap-1 sm:gap-2 z-10'>
-                        {/* Hide Search and Phone on very small mobile screens to save space */}
+                    <div className='flex items-center gap-1 sm:gap-1.5 z-10 shrink-0'>
                         {isConsumerView && <IconBtn className="hidden sm:flex" Icon={AiOutlineSearch} onClick={() => router.push("/categories")} />}
                         <IconBtn className="hidden md:flex" Icon={AiOutlinePhone} onClick={() => router.push("/support")} />
-                        
-                        {/* Cart always visible if consumer */}
-                        {isConsumerView && <IconBtn Icon={AiOutlineShoppingCart} badgeCount={2} onClick={() => router.push("/cart")} highlight />}
+                        {isConsumerView && <IconBtn Icon={AiOutlineShoppingCart} badgeCount={2} onClick={() => router.push("/cart")} />}
 
-                        {/* Divider - hidden on mobile */}
-                        <div className="hidden sm:block w-px h-6 bg-white/10 mx-1 sm:mx-2" /> 
+                        <div className="hidden sm:block w-px h-6 bg-white/10 mx-1.5" />
 
-                        {/* Profile Dropdown - Hidden on very small mobile, accessible via hamburger menu */}
+                        {/* Profile Dropdown Trigger */}
                         <div className='relative hidden sm:block' ref={dropdownRef}>
-                            <button 
+                            <motion.button
+                                whileTap={{ scale: 0.97 }}
                                 onClick={() => setOpenMenu(!openMenu)}
-                                className="flex items-center gap-2 sm:gap-3 pl-2 pr-2 sm:pr-4 py-1.5 rounded-full hover:bg-white/4 transition-colors border border-transparent hover:border-white/5"
+                                className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full hover:bg-white/5 transition-colors border border-transparent hover:border-white/5"
                             >
                                 {user?.image ? (
-                                    <img src={user.image} alt='user' className='w-8 h-8 rounded-full object-cover border border-white/10' />
+                                    <img src={user.image} alt='user' className='w-7 h-7 rounded-full object-cover border border-white/10' />
                                 ) : (
-                                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center border border-violet-500/30">
-                                        <AiOutlineUser size={16} />
+                                    <div className="w-7 h-7 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center border border-violet-500/30 text-xs font-semibold">
+                                        {user?.name?.charAt(0).toUpperCase() || <AiOutlineUser size={14} />}
                                     </div>
                                 )}
-                                {user && <span className="text-sm font-medium text-gray-300 hidden md:block max-w-25 truncate">{user.name || "User"}</span>}
-                            </button>
+                                {user && <span className="text-xs font-medium text-gray-300 hidden md:block max-w-24 truncate">{user.name}</span>}
+                            </motion.button>
 
-                            {/* Dropdown Menu */}
+                            {/* Options Overlay Panel */}
                             <AnimatePresence>
                                 {openMenu && (
                                     <motion.div
@@ -126,85 +147,95 @@ const Navbar = ({ user }: NavProps) => {
                                         animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
                                         exit={{ opacity: 0, y: 10, scale: 0.95, filter: "blur(4px)" }}
                                         transition={{ duration: 0.2, ease: "easeOut" }}
-                                        className='absolute right-0 mt-4 w-56 sm:w-60 bg-[#0a0a0c]/95 backdrop-blur-xl border border-white/5 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden p-2 z-50'
+                                        className='absolute right-0 mt-3 w-56 bg-[#0a0a0c]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-1.5 z-50'
                                     >
-                                        <div className="px-4 py-3 border-b border-white/5 mb-2">
-                                            <p className="text-sm font-semibold text-white truncate">{user?.name || "Guest Account"}</p>
-                                            <p className="text-xs text-gray-500 truncate">{user?.email || "Sign in to manage orders"}</p>
+                                        <div className="px-3 py-2 border-b border-white/5 mb-1.5">
+                                            <p className="text-xs font-semibold text-white truncate">{user?.name || "Guest Account"}</p>
+                                            <p className="text-[10px] text-zinc-500 truncate mt-0.5">{user?.email || "Management Console"}</p>
                                         </div>
-
-                                        <button onClick={() => { router.push("/profile"); setOpenMenu(false) }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/4 rounded-xl transition-colors">
-                                            <AiOutlineUser size={18} className="text-gray-500" /> Profile
+                                        <button onClick={() => { router.push("/profile"); setOpenMenu(false) }} className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                                            <AiOutlineUser size={16} /> Profile Workspace
                                         </button>
-
-                                        {user ? (
-                                            <button onClick={() => { signOut({ callbackUrl: "/login" }); setOpenMenu(false) }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors mt-1">
-                                            <AiOutlineLogout size={18} className="text-red-500/70" /> Sign Out
-                                            </button>
-                                        ) : (
-                                            <button onClick={() => { router.push("/login"); setOpenMenu(false) }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-violet-400 hover:bg-violet-500/10 rounded-xl transition-colors mt-1">
-                                                <AiOutlineLogin size={18} className="text-violet-500/70" /> Sign In
-                                            </button>
-                                        )}
+                                        <button onClick={() => { signOut({ callbackUrl: "/login" }); setOpenMenu(false) }} className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors mt-0.5">
+                                            <AiOutlineLogout size={16} /> Sign Out
+                                        </button>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
                         </div>
 
-                        {/* Hamburger Menu - Visible on tablet/mobile when center links hide */}
-                        <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 sm:p-2 ml-1 text-gray-300 hover:text-white hover:bg-white/5 rounded-full transition-colors">
-                            <AiOutlineMenu size={24} />
-                        </button>
+                        {/* Hamburger Control Toggle Link */}
+                        <motion.button 
+                            whileTap={{ scale: 0.92 }}
+                            onClick={() => setSidebarOpen(true)} 
+                            className="lg:hidden p-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+                        >
+                            <AiOutlineMenu size={22} />
+                        </motion.button>
                     </div>
                 </div>
             </motion.div>
 
-            {/* --- Mobile Sidebar Overlay & Drawer --- */}
+            {/* --- Mobile Sidebar Drawer Slider System --- */}
             <AnimatePresence>
                 {sidebarOpen && (
-                    <div className="fixed inset-0 z-100 pointer-events-auto">
+                    <div className="fixed inset-0 z-100 pointer-events-auto lg:hidden">
+                        {/* Backdrop Blur Fade */}
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setSidebarOpen(false)} />
 
+                        {/* Drawer Sheet */}
                         <motion.div
                             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                            className='absolute top-0 right-0 h-screen w-[85%] sm:w-80 bg-[#08080a] border-l border-white/5 p-6 flex flex-col shadow-2xl'
+                            transition={{ type: "spring", bounce: 0, duration: 0.35 }}
+                            className='absolute top-0 right-0 h-screen w-[80%] sm:w-80 bg-[#08080a] border-l border-white/5 p-5 flex flex-col shadow-2xl shadow-black'
                         >
-                            <div className='flex justify-between items-center mb-8'>
-                                <div className="flex items-center gap-3">
+                            <div className='flex justify-between items-center mb-6'>
+                                <div className="flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-lg bg-linear-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-white text-sm">S</div>
-                                    <h1 className='text-lg font-bold'>Menu</h1>
+                                    <h1 className='text-sm font-bold text-white uppercase tracking-wider'>Menu</h1>
                                 </div>
-                                <button onClick={() => setSidebarOpen(false)} className='p-2 bg-white/2 border border-white/5 rounded-full hover:bg-white/5 transition-colors'>
-                                    <AiOutlineClose size={18} />
+                                <button onClick={() => setSidebarOpen(false)} className='p-1.5 bg-white/5 border border-white/5 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors'>
+                                    <AiOutlineClose size={16} />
                                 </button>
                             </div>
 
-                            <div className='flex flex-col gap-2 grow overflow-y-auto custom-scrollbar pr-2'>
+                            <div className='flex flex-col gap-1 grow overflow-y-auto pr-1'>
+                                {/* Contextual Rendering bases on Roles */}
                                 {isConsumerView && (
                                     <>
-                                        <MobileNavBtn label="Home" Icon={AiOutlineHome} isActive={pathname === "/"} onClick={() => { router.push("/"); setSidebarOpen(false) }} />
-                                        <MobileNavBtn label="Categories" Icon={AiOutlineAppstore} isActive={pathname === "/categories"} onClick={() => { router.push("/categories"); setSidebarOpen(false) }} />
-                                        <MobileNavBtn label="Shops" Icon={AiOutlineShop} isActive={pathname === "/shops"} onClick={() => { router.push("/shops"); setSidebarOpen(false) }} />
-                                        <MobileNavBtn label="Orders" Icon={GoListUnordered} isActive={pathname === "/orders"} onClick={() => { router.push("/orders"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Home Terminal" Icon={AiOutlineHome} isActive={pathname === "/"} onClick={() => { router.push("/"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Categories Matrix" Icon={AiOutlineAppstore} isActive={pathname === "/categories"} onClick={() => { router.push("/categories"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Marketplace Shops" Icon={AiOutlineShop} isActive={pathname === "/shops"} onClick={() => { router.push("/shops"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Purchase Ledger" Icon={GoListUnordered} isActive={pathname === "/orders"} onClick={() => { router.push("/orders"); setSidebarOpen(false) }} />
                                     </>
                                 )}
-                                
-                                <div className="h-px w-full bg-white/5 my-4" /> 
-                                
-                                <MobileNavBtn label="Profile" Icon={AiOutlineUser} isActive={pathname === "/profile"} onClick={() => { router.push("/profile"); setSidebarOpen(false) }} />
 
-                                <div className="mt-auto pt-6 pb-4">
-                                    {user ? (
-                                        <button onClick={() => { signOut(); setSidebarOpen(false) }} className="flex items-center justify-center gap-3 w-full py-3.5 rounded-2xl bg-red-500/10 text-red-400 font-medium hover:bg-red-500/20 transition-colors border border-red-500/20">
-                                            <AiOutlineLogout size={20} /> Sign Out
-                                        </button>
-                                    ) : (
-                                        <button onClick={() => { router.push("/login"); setSidebarOpen(false) }} className="flex items-center justify-center gap-3 w-full py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-medium transition-colors shadow-[0_0_20px_rgba(139,92,246,0.3)]">
-                                            <AiOutlineLogin size={20} /> Sign In
-                                        </button>
-                                    )}
-                                </div>
+                                {isVendorView && (
+                                    <>
+                                        <MobileNavBtn label="Overview Dashboard" Icon={LuLayoutDashboard} isActive={currentTab === "dashboard"} onClick={() => { router.push("/?tab=dashboard"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Products Hub" Icon={LuPackage} isActive={currentTab === "products"} onClick={() => { router.push("/?tab=products"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Orders Flow Desk" Icon={GoListUnordered} isActive={currentTab === "orders"} onClick={() => { router.push("/?tab=orders"); setSidebarOpen(false) }} />
+                                    </>
+                                )}
+
+                                {isAdminView && (
+                                    <>
+                                        <MobileNavBtn label="Overview Control" Icon={LuLayoutDashboard} isActive={currentTab === "dashboard"} onClick={() => { router.push("/?tab=dashboard"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Vendor Details" Icon={LuUsers} isActive={currentTab === "vendordetails"} onClick={() => { router.push("/?tab=vendordetails"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Global Orders" Icon={GoListUnordered} isActive={currentTab === "userorders"} onClick={() => { router.push("/?tab=userorders"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Merchant Access" Icon={LuShieldAlert} isActive={currentTab === "approvals"} onClick={() => { router.push("/?tab=approvals"); setSidebarOpen(false) }} />
+                                        <MobileNavBtn label="Product Audits" Icon={LuSquare} isActive={currentTab === "productapprovals"} onClick={() => { router.push("/?tab=productapprovals"); setSidebarOpen(false) }} />
+                                    </>
+                                )}
+
+                                <div className="h-px w-full bg-white/5 my-3" />
+                                <MobileNavBtn label="Profile Workspace" Icon={AiOutlineUser} isActive={pathname === "/profile"} onClick={() => { router.push("/profile"); setSidebarOpen(false) }} />
+                            </div>
+
+                            <div className="pt-4 mt-auto">
+                                <button onClick={() => { signOut(); setSidebarOpen(false) }} className="flex items-center justify-center gap-2.5 w-full py-2.5 rounded-xl bg-red-500/10 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-all border border-red-500/10">
+                                    <AiOutlineLogout size={16} /> Secure Sign Out
+                                </button>
                             </div>
                         </motion.div>
                     </div>
@@ -214,51 +245,48 @@ const Navbar = ({ user }: NavProps) => {
     )
 }
 
-// --- Subcomponents ---
+export default Navbar
 
-const NavItem = ({ label, path, router, isActive }: NavItemProps) => (
+// --- Sub-Components ---
+
+const GlobalNavItem = ({ label, id, currentActive, onClick }: NavItemProps) => (
     <button
-        onClick={() => router.push(path)}
-        className='relative px-5 py-2 text-sm font-medium transition-colors duration-300 rounded-full group'
+        onClick={onClick}
+        className='relative px-4 py-1.5 text-xs font-semibold tracking-wide transition-colors duration-300 rounded-full group outline-none whitespace-nowrap'
     >
-        {isActive && (
+        {/* Universal layoutId shared workspace across all center rendering objects */}
+        {currentActive && (
             <motion.div
-                layoutId="desktop-nav-pill"
-                className="absolute inset-0 bg-white/6 border border-white/5 rounded-full"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                layoutId="desktop-global-pill"
+                className="absolute inset-0 bg-white/10 border border-white/5 rounded-full shadow-inner"
+                transition={{ type: "spring", stiffness: 380, damping: 32 }}
             />
         )}
-        <span className={`relative z-10 ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200"}`}>
+        <span className={`relative z-10 transition-colors duration-200 ${currentActive ? "text-white" : "text-gray-400 group-hover:text-gray-200"}`}>
             {label}
         </span>
     </button>
 )
 
-const IconBtn = ({ Icon, onClick, badgeCount, highlight, className = '' }: IconBtnProps) => (
-    <button
-        onClick={onClick}
-        className={`relative p-2 sm:p-2.5 rounded-full transition-all duration-300 ${highlight ? 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'} ${className}`}
+const IconBtn = ({ Icon, onClick, badgeCount, className }: IconBtnProps) => (
+    <motion.button 
+        whileTap={{ scale: 0.92 }}
+        onClick={onClick} 
+        className={`relative p-2 text-zinc-400 hover:text-white bg-white/0 hover:bg-white/5 rounded-full transition-colors duration-300 ${className}`}
     >
-        <Icon size={20} />
-        {badgeCount !== undefined && badgeCount > 0 && (
-            <span className='absolute top-0 right-0 bg-fuchsia-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-[0_0_10px_rgba(217,70,239,0.8)] border border-black/20'>
+        <Icon size={18} />
+        {badgeCount !== undefined && (
+            <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-violet-600 text-[8px] font-bold text-white flex items-center justify-center rounded-full border border-[#0a0a0c]">
                 {badgeCount}
             </span>
         )}
-    </button>
+    </motion.button>
 )
 
 const MobileNavBtn = ({ label, Icon, onClick, isActive }: { label: string, Icon: any, onClick: () => void, isActive: boolean }) => (
-    <button
-        className={`relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-medium overflow-hidden group w-full text-left`}
-        onClick={onClick}
-    >
-        {isActive && (
-            <motion.div layoutId="mobile-nav-bg" className="absolute inset-0 bg-white/5 border border-white/5 rounded-2xl" />
-        )}
-        <Icon size={22} className={`relative z-10 transition-colors ${isActive ? "text-violet-400" : "text-gray-500 group-hover:text-gray-300"}`} />
-        <span className={`relative z-10 transition-colors ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200"}`}>{label}</span>
+    <button className='relative flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium w-full text-left outline-none' onClick={onClick}>
+        {isActive && <motion.div layoutId="mobile-nav-bg" className="absolute inset-0 bg-white/5 border border-white/5 rounded-xl" />}
+        <Icon size={16} className={`relative z-10 ${isActive ? "text-violet-400" : "text-zinc-500"}`} />
+        <span className={`relative z-10 text-xs font-semibold ${isActive ? "text-white" : "text-zinc-400"}`}>{label}</span>
     </button>
 )
-
-export default Navbar

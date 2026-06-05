@@ -18,7 +18,7 @@ const Footer = ({ user }: { user?: IUser | null }) => {
     const isAdminorVendor = role === "admin" || role === "vendor"
 
     return (
-        <footer className='relative w-full bg-[#030305] border-t border-white/5 pt-16 pb-8 overflow-hidden z-40 text-gray-400 font-sans'>
+        <footer className='relative w-full  bg-[#0d0d11] border-t border-white/5 pt-16 pb-8 overflow-hidden z-40 text-gray-400 font-sans'>
             
             {/* Background Glow Effect */}
             <div className="absolute bottom-[-20%] left-1/2 -translate-x-1/2 w-[60%] h-[50%] bg-violet-600/10 blur-[120px] rounded-full pointer-events-none" />
