@@ -26,7 +26,7 @@ const LoginFinal = () => {
         try {
             const result = await signIn("credentials", { email, password, redirect: false })
             if (result?.error) {
-                toast.error("Invalid email or password")
+                toast.error("Invalid email or password", {duration : 2000})
                 setIsLoading(false)
                 return
             }

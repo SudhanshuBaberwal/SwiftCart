@@ -77,7 +77,7 @@ const Dashboard = () => {
   const COLORS = ["#10B981", "#3B82F6", "#EF4444", "#F97316"]
   
   return (
-    <div className='min-h-screen w-full px-4 sm:px-6 lg:px-8 py-8 text-zinc-100  bg-[#0d0d11] antialiased selection:bg-blue-500/20'>
+    <div className='w-full px-4 sm:px-6 lg:px-8 pt-8 pb-0 text-zinc-100  bg-[#0d0d11] antialiased selection:bg-blue-500/20'>
       <div className='max-w-7xl mx-auto space-y-8 relative z-10'>
         
         {/* Decorative ambient background flares */}

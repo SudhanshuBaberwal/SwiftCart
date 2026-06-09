@@ -10,7 +10,7 @@ It is built with modern web technologies and designed with scalability and clean
 👉 Add your deployed link here
 
 ```
-https://your-project-link.vercel.app
+<!-- https://your-project-link.vercel.app -->
 ```
 
 ---
@@ -84,7 +84,7 @@ MultiCart
 ### 1️⃣ Clone the repository
 
 ```
-git clone https://github.com/yourusername/multicart.git
+git clone https://github.com/SudhanshuBaberwal/SwiftCart
 ```
 
 ### 2️⃣ Navigate to project
@@ -160,8 +160,8 @@ This project is licensed under the **MIT License**.
 
 **Sudhanshu Baberwal**
 
-* GitHub: https://github.com/yourusername
-* LinkedIn: Add your LinkedIn
+* GitHub: https://github.com/SudhanshuBaberwal
+* LinkedIn: https://www.linkedin.com/in/sudhanshu-baberwal-7b2aa8324/ 
 
 ---
 
